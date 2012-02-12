@@ -1,0 +1,1 @@
+SuperNode::Application.config.secret_token = 'b38c48a4a47ea23768594f9aebc23aa2f177c5f53f313308f329a400d24d327a081ba2f2ac572d9cf2642beb11d68fafd46b354a4abc1727acec71dfab8e5a81'
