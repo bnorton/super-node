@@ -27,3 +27,6 @@ group :test do
 end
 
 gem 'jquery-rails'
+
+gem 'koala'
+gem 'twitter'
