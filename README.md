@@ -88,12 +88,26 @@ Each item from the list of data items in (A) is of type (B).
 
 #####Optional parameters:
 - `batch_timeout` - Number of miliseconds between commits
+- `metadata` - Some extra information about the batch. Mirrored
 
-######Sample batch creation
+#####Sample batch creation
+that the server is ready to accept connections.
 ```javascript
   {
     "callback_url": "https://10.10.203.4/messages/callback.json",
     "batch_id": "AAf3lkeq34...",
+    metadata: { ... },
     "batch_timeout": 60000
   }
 ```
+
+#####Upon creating the batch:
+Super Node will `POST` to the callback_url to in order to verify that the
+endpoint can respond to requests. Super Node expects to connect with SSL, and will
+send a JSON hash. 
+- ` { "token": "a_token", "batch_id": "AAf3lkeq34...", "created_at": "2012-02-13T00:39:34Z" } `
+
+In return it expects and a status of 200 with the `token` mirrored
+back. Any other response will delete the batch, andd further requests to said batch will be ignored.
+- ` { "token": "given_token" } `
+
