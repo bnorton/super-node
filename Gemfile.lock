@@ -55,6 +55,7 @@ GEM
       rack-test (>= 0.5.4)
       selenium-webdriver (~> 2.0)
       xpath (~> 0.1.4)
+    celluloid (0.8.0)
     childprocess (0.3.1)
       ffi (~> 1.0.6)
     coffee-rails (3.2.2)
@@ -64,6 +65,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.2.0)
+    connection_pool (0.1.0)
     crack (0.3.1)
     daemons (1.1.8)
     database_cleaner (0.7.1)
@@ -129,6 +131,7 @@ GEM
     rake (0.9.2.2)
     rdoc (3.12)
       json (~> 1.4)
+    redis (2.2.2)
     rspec (2.8.0)
       rspec-core (~> 2.8.0)
       rspec-expectations (~> 2.8.0)
@@ -154,6 +157,11 @@ GEM
       multi_json (~> 1.0.4)
       rubyzip
     shoulda-matchers (1.0.0)
+    sidekiq (0.5.1)
+      celluloid
+      connection_pool
+      multi_json
+      redis
     simple_oauth (0.1.5)
     sprockets (2.1.2)
       hike (~> 1.2)
@@ -198,9 +206,11 @@ DEPENDENCIES
   koala
   mysql2
   rails (= 3.2.1)
+  redis
   rspec-rails
   sass-rails (~> 3.2.3)
   shoulda-matchers
+  sidekiq
   thin
   twitter
   uglifier

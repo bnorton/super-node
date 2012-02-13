@@ -28,5 +28,8 @@ end
 
 gem 'jquery-rails'
 
+gem 'redis'
+gem 'sidekiq'
+
 gem 'koala'
 gem 'twitter'
