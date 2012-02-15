@@ -3,29 +3,35 @@ require 'spec_helper'
 describe SuperNode::Invocation do
   let(:defaults) {{ "class" => "SuperNode" }}
     let(:super_node) { mock(SuperNode::Invocation) }
-    let(:super_node_queue) { mock(SuperNode::Queue) }
+    let(:super_node_worker) { mock(SuperNode::Worker) }
 
   describe "#new" do
     let(:time) { Time.now }
 
-    it "should save the batch_id" do
+    it "should save the bucket_id" do
       inv = SuperNode::Invocation.new(defaults.merge({
-        "batch_id" => "abc123"
+        "bucket_id" => "abc123"
       }))
-      inv.batch_id.should == "abc123"
+      inv.bucket_id.should == "abc123"
     end
 
     it "should save the token" do
       inv = SuperNode::Invocation.new(defaults.merge({
         "metadata" => {
-          "batch_id" => 1,
+          "bucket_id" => 1,
           "created_at" => time
         }
       }))
       inv.metadata.should == {
-        "batch_id" => 1,
+        "bucket_id" => 1,
         "created_at" => time
       }
+    end
+
+    it "should error when passed a string" do
+      expect {
+        SuperNode::Invocation.new("hey")
+        }.to raise_error
     end
   end
 
@@ -46,6 +52,8 @@ describe SuperNode::Invocation do
       expect {
         SuperNode::Invocation.new({"class" => "RandomClassNameHere"})
       }.to raise_error(SuperNode::ArgumentError)
+
+
     end
 
     it "should respond to perform" do
@@ -55,7 +63,7 @@ describe SuperNode::Invocation do
     end
 
     it "should error when it doesn't respond to perform" do
-      SuperNode::Queue.respond_to?(:perform).should be_false
+      SuperNode::Worker.respond_to?(:perform).should be_false
       expect {
         SuperNode::Invocation.new({"class" => "SuperNode::Queue"})
       }.to raise_error(SuperNode::ArgumentError)
@@ -73,14 +81,36 @@ describe SuperNode::Invocation do
 
   describe "#save" do
     it "should add itself to a queue upon save" do
-      SuperNode::Queue.stub(:new).and_return(super_node_queue)
-      super_node_queue.should_receive(:enqueue).and_return(true)
+      SuperNode::Worker.stub(:new).and_return(super_node_worker)
+      super_node_worker.should_receive(:enqueue).and_return(true)
 
       inv = SuperNode::Invocation.new({
           "class" => "SuperNode",
           "method" => "verify!"
         })
       inv.save
+    end
+  end
+
+  describe "#to_json" do
+    it "should save the class" do
+      inv = SuperNode::Invocation.new(defaults.merge({
+        "class" => "SuperNode"
+      })).to_json
+
+      JSON.parse(inv)['class'].should == "SuperNode"
+    end
+
+    it "should export and import correctly" do
+      invocation_json = SuperNode::Invocation.new({
+        'class' => 'SuperNode',
+        'method' => 'perform',
+        'bucket_id' => '10'
+      }).to_json
+
+      expect {
+        SuperNode::Invocation.new(JSON.parse(invocation_json))
+      }.not_to raise_error
     end
   end
 end

@@ -1,42 +1,36 @@
 module SuperNode
   class Invocation
-    # DEFAULTS = [:class, :method, :batch_id, :metadata]
-    # 
+
+    attr_accessor :klass, :method, :bucket_id, :metadata
+
     def initialize(options = {})
       @klass = options["class"]
+      options["method"] = options["method"].try(:to_sym) || :perform
 
-      @method = options["method"].try(:to_sym) || :perform
-      @batch_id = options["batch_id"]
-      @metadata = options["metadata"]
+      options.slice(*%w(method bucket_id metadata)).each do |type, val|
+        send(:"#{type}=", val)
+      end
+
       verify!
     end
 
     def save
-      SuperNode::Queue.new(self).enqueue
+      SuperNode::Worker.new(self).enqueue
     end
 
-    def klass
-      @klass
-    end
-
-    def method
-      @method
-    end
-
-    def batch_id
-      @batch_id
-    end
-
-    def metadata
-      @metadata
+    def to_json(*)
+      ActiveSupport::JSON.encode({
+        "class" => klass.to_s,
+        "method" => method,
+        "bucket_id" => bucket_id,
+        "metadata" => metadata
+      })
     end
 
     private
 
     def verify!
-      unless @klass.present? && (@klass = @klass.constantize rescue false) && @klass.respond_to?(@method)
-        raise ArgumentError
-      end
+      raise ArgumentError unless @klass.present? && (@klass = @klass.constantize rescue false) && @klass.respond_to?(@method)
     end
   end
 end
