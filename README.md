@@ -7,8 +7,8 @@
 #####Request endpoints
 - `POST` to `/enqueue`
 - `POST` to `/batch`
-- `PUT` to `/batch/:batch_id`
-- `DELETE` to `/batch/:batch_id`
+- `PUT` to `/batch/:bucket_id`
+- `DELETE` to `/batch/:bucket_id`
 
 #/enqueue
 
@@ -20,7 +20,7 @@
 
 #####Optional parameters:
 - `data` - A hash of identifying data. This field is mirrored upon response.
-- `batch_id` - A unique identifier for bucket that requests will be processed from. Defaults to the 'primary' batch
+- `bucket_id` - A unique identifier for bucket that requests will be processed from. Defaults to the 'primary' batch
 
 #####Sample request:
 ######Performs the Invocation as `Fetcher.perform("/me", { "access_token": "g903jDJa", ... })`
@@ -48,7 +48,7 @@
 ```javascript
   {
     "code": 200,
-    "batch_id": "JS2s0yw93dj",
+    "bucket_id": "JS2s0yw93dj",
     "metadata": { "account_id": 7, "type": "FacebookPost", ... },
     "data": [
       { ..(B).. },
@@ -60,7 +60,7 @@
 ```javascript
   {
     "code": 401,
-    "batch_id": "JS2s0yw93dj",
+    "bucket_id": "JS2s0yw93dj",
     "metadata": { "account_id": 7, ... },
     "data": []
   }
@@ -84,7 +84,7 @@ Each item from the list of data items in (A) is of type (B).
 
 #####Required parameters:
 - `callback_url` - The url that will be `POST`ed to upon response.
-- `batch_id` - The unique identifier for this bucket.
+- `bucket_id` - The unique identifier for this bucket.
 
 #####Optional parameters:
 - `batch_timeout` - Number of miliseconds between commits
@@ -95,8 +95,8 @@ that the server is ready to accept connections.
 ```javascript
   {
     "callback_url": "https://10.10.203.4/messages/callback.json",
-    "batch_id": "AAf3lkeq34...",
-    metadata: { ... },
+    "bucket_id": "AAf3lkeq34...",
+    "metadata": { ... },
     "batch_timeout": 60000
   }
 ```
@@ -105,7 +105,7 @@ that the server is ready to accept connections.
 Super Node will `POST` to the callback_url to in order to verify that the
 endpoint can respond to requests. Super Node expects to connect with SSL, and will
 send a JSON hash. 
-- ` { "token": "a_token", "batch_id": "AAf3lkeq34...", "created_at": "2012-02-13T00:39:34Z" } `
+- ` { "token": "a_token", "bucket_id": "AAf3lkeq34...", "created_at": "2012-02-13T00:39:34Z" } `
 
 In return it expects and a status of 200 with the `token` mirrored
 back. Any other response will delete the batch, andd further requests to said batch will be ignored.

@@ -29,7 +29,7 @@ end
 gem 'jquery-rails'
 
 gem 'redis'
-gem 'sidekiq'
+gem 'sidekiq', :git => 'https://github.com/bnorton/sidekiq.git'
 
 gem 'koala'
 gem 'twitter'
