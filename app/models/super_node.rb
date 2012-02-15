@@ -7,9 +7,7 @@ module SuperNode
   end
 
   def self.verify!(options = {})
-    return false unless options["callback_url"]
-    response = SuperNode::HTTP.new(options["callback_url"]).post
-    puts response.inspect
-    response.code == "200"
+    return false unless (url = options["callback_url"])
+    SuperNode::HTTP.new(url).post.code == "200"
   end
 end
