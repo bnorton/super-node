@@ -43,9 +43,11 @@ RSpec.configure do |config|
   end
 
   config.before(:each) do
-    load Rails.root.join('db', 'seeds.rb')
+    # load Rails.root.join('db', 'seeds.rb')
     WebMock.disable_net_connect!(:allow_localhost => true)
     DatabaseCleaner.start
+    SuperNode::Bucket.send(:redis).flushall
+    # puts "BEFORE EACH"
   end
 
   # [:model, :controller, :request].each do |example_type|
