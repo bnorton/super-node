@@ -2,13 +2,13 @@
 
 ##An Asynchronous background queue that is accessable via a simple API.
 
-###The easiest way to request data from Super Node is to `POST` to `/enqueue`.
+There are two main way ways to request data from from Super Node.
+- The easiest way is to prefix `async_` to the beginning of a method invocation.
+When a function is `User.send_email` then just call `User.async_send_email` with the same arguments as before.
+- The other way is to `POST` to `/enqueue` with an `invocation` object.
 
 #####Request endpoints
 - `POST` to `/enqueue`
-- `POST` to `/batch`
-- `PUT` to `/batch/:bucket_id`
-- `DELETE` to `/batch/:bucket_id`
 
 #/enqueue
 
