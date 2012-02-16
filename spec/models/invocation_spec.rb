@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe SuperNode::Invocation do
-  let(:defaults) {{ "class" => "SuperNode" }}
+  let(:defaults) {{ "class" => "SuperNode::Nom" }}
     let(:super_node) { mock(SuperNode::Invocation) }
     let(:super_node_worker) { mock(SuperNode::Worker) }
 
@@ -44,7 +44,7 @@ describe SuperNode::Invocation do
 
     it "should require a existant class" do
       expect {
-        SuperNode::Invocation.new({"class" => "SuperNode"})
+        SuperNode::Invocation.new({"class" => "SuperNode::Nom"})
       }.not_to raise_error
     end
 
@@ -58,7 +58,7 @@ describe SuperNode::Invocation do
 
     it "should respond to perform" do
       expect {
-        SuperNode::Invocation.new({"class" => "SuperNode"})
+        SuperNode::Invocation.new({"class" => "SuperNode::Nom"})
       }.not_to raise_error
     end
 
@@ -72,21 +72,20 @@ describe SuperNode::Invocation do
     it "should respond to the method name" do
       expect {
         SuperNode::Invocation.new({
-          "class" => "SuperNode",
+          "class" => "SuperNode::Nom",
           "method" => "verify"
         })
-      }.not_to raise_error(SuperNode::MethodNotFound)
+      }.to raise_error(SuperNode::MethodNotFound)
     end
   end
 
   describe "#save" do
     it "should add itself to a queue upon save" do
       SuperNode::Worker.stub(:new).and_return(super_node_worker)
-      super_node_worker.should_receive(:enqueue).and_return(true)
 
       inv = SuperNode::Invocation.new({
-          "class" => "SuperNode",
-          "method" => "verify!"
+          "class" => "SuperNode::Nom",
+          "method" => "perform"
         })
       inv.save
     end
@@ -95,15 +94,15 @@ describe SuperNode::Invocation do
   describe "#to_json" do
     it "should save the class" do
       inv = SuperNode::Invocation.new(defaults.merge({
-        "class" => "SuperNode"
+        "class" => "SuperNode::Nom"
       })).to_json
 
-      JSON.parse(inv)['class'].should == "SuperNode"
+      JSON.parse(inv)['class'].should == "SuperNode::Nom"
     end
 
     it "should export and import correctly" do
       invocation_json = SuperNode::Invocation.new({
-        'class' => 'SuperNode',
+        'class' => 'SuperNode::Nom',
         'method' => 'perform',
         'bucket_id' => '10'
       }).to_json

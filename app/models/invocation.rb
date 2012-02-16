@@ -15,7 +15,7 @@ module SuperNode
     end
 
     def save
-      SuperNode::Worker.new(self).enqueue
+      SuperNode::Worker.new(self)
     end
 
     def to_json(*)
@@ -30,7 +30,9 @@ module SuperNode
     private
 
     def verify!
-      raise ArgumentError unless @klass.present? && (@klass = @klass.constantize rescue false) && @klass.respond_to?(@method)
+      raise SuperNode::ArgumentError, "A SuperNode::Invocatin needs a target 'class'." unless @klass.present?
+      raise SuperNode::ArgumentError, "#{@klass} doesn't appear to be a valid constant." unless (@klass = @klass.constantize rescue false)
+      raise SuperNode::MethodNotFound, "Class: #{@klass} didn't respond to method: #{@method}" unless @klass.new.respond_to?(@method)
     end
   end
 end
