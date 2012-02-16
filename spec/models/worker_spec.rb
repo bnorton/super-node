@@ -16,34 +16,38 @@ describe SuperNode::Worker do
         SuperNode::Worker.new(invocation)
       end
     end
-
-    describe "#perform" do
-      it "should exist" do
-        SuperNode::Worker.new.respond_to?(:perform).should be_true
-      end
-
-      it "should be called with a valid invocation object" do
-        invocation_json = SuperNode::Invocation.new({
-          'class' => 'SuperNode',
-          'method' => 'perform',
-          'bucket_id' => '10'
-        }).to_json
-
-        expect {
-          SuperNode::Invocation.new(JSON.parse(invocation_json))
-        }.not_to raise_error
-      end
-
-      it "should make the invocation" do
-
-      end
-
-      it "should make the callback after an invocation" do
-
-      end
-    end
   end
 
+  describe "#perform" do
+    let(:invocation) do
+      SuperNode::Invocation.new({
+        'class' => 'SuperNode::Nom',
+        'method' => 'perform',
+        'bucket_id' => '10'
+      })
+    end
+
+    it "should exist" do
+      SuperNode::Worker.new.respond_to?(:perform).should be_true
+    end
+
+    it "should be called with a valid invocation object" do
+      invocation_json = invocation.to_json
+
+      expect {
+        SuperNode::Invocation.new(JSON.parse(invocation_json))
+      }.not_to raise_error
+    end
+
+    it "should cache the invocation" do
+      worker = SuperNode::Worker.new(invocation)
+      worker.invocation.should == invocation
+    end
+
+    it "should make the callback after an invocation" do
+
+    end
+  end
 
   describe "#enqueue" do
     it "should exist" do

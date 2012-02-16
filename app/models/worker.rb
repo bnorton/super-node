@@ -3,8 +3,11 @@ module SuperNode
 
     include Sidekiq::Worker
 
+    attr_accessor :invocation
+
     def initialize(invocation = nil)
       if invocation.present?
+        @invocation = invocation
         # this might be the place for the invocation to be pushed
         Sidekiq::Client.push(invocation.bucket_id, 'class' => 'SuperNode::Worker', 'args' => [invocation.to_json])
       else
@@ -16,6 +19,10 @@ module SuperNode
     # The perform method makes the supplied invocation and 
     # makes the callback to the, you guessed it, callback_url for this bucket.
     def perform(invocation, options = {})
+      Rails.logger.info "INVOCATION #{invocation}"
+      invocation = SuperNode::Invocation.new(JSON.parse(invocation))
+      invocation.klass.new.send(invocation.method)
+
       # The Sidekiq client operates on SuperNode::Workers which operate, in turn
       #   on the invocation that is passed to it. This perform method will then
       #   make an invocation object from the json passed in and then go to work.
