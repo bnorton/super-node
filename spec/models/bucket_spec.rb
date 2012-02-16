@@ -1,6 +1,15 @@
 require 'spec_helper'
 
 describe SuperNode::Bucket do
+  let(:bucket) do
+    SuperNode::Bucket.find_or_create_by_bucket_id({
+      'bucket_id' => @next_id,
+      'callback_url' => 'anything'
+    })
+  end
+  let(:invocation1) { SuperNode::Invocation.new({"class" => "SuperNode::Worker"}) }
+  let(:invocation2) { SuperNode::Invocation.new({"class" => "SuperNode::Nom"}) }
+
   before do
     @next_id = rand(1<<31).to_s
   end
@@ -11,7 +20,7 @@ describe SuperNode::Bucket do
         SuperNode::Bucket.new({
           'callback_url' => "localhost:3000/callback"
         })      
-      }.to raise_error(ArgumentError)
+      }.to raise_error(SuperNode::ArgumentError)
     end
 
     it "should require a callback_url" do
@@ -19,15 +28,12 @@ describe SuperNode::Bucket do
         SuperNode::Bucket.new({
           'bucket_id' => @next_id
         })
-      }.to raise_error(ArgumentError)
+      }.to raise_error(SuperNode::ArgumentError)
     end
 
     it "should save the valid attributes" do
       expect {
-        SuperNode::Bucket.new({
-          'bucket_id' => @next_id,
-          'callback_url' => "localhost:3000/callback"
-        })  
+        bucket
       }.not_to raise_error
     end
   end
@@ -52,7 +58,6 @@ describe SuperNode::Bucket do
         'callback_url' => "localhost:3000/callback"
       })
     end
-
     it "should return a SuperNode::Bucket" do
       bucket.class.should == SuperNode::Bucket
       bucket.bucket_id = @next_id
@@ -84,6 +89,41 @@ describe SuperNode::Bucket do
       }).to_json.should == bucket.to_json
 
       bucket.callback_url.should == url
+    end
+  end
+
+  describe "#queue_id" do
+    it "should be SuperNode Invocation Queue aka. siq_:bucket_id" do
+      bucket.queue_id.should == "siq_#{bucket.bucket_id}"
+    end
+  end
+
+  describe "#length" do
+    it "should return the length of the bucket's queue" do
+      before = bucket.length
+      bucket.push invocation1
+      bucket.length.should == before + 1
+    end
+  end
+
+  describe "#push" do
+    it "should add an item to the bucket's queue" do
+      before = bucket.length
+      bucket.push invocation1
+      bucket.length.should == before + 1
+    end
+  end
+
+  describe "#pop" do
+    it "should get the least recently pushed item" do
+      bucket.pop.should be_nil
+
+      bucket.push invocation1
+      bucket.push invocation2
+
+      bucket.pop.should == invocation1.to_json
+      bucket.pop.should == invocation2.to_json
+      bucket.pop.should be_nil
     end
   end
 

@@ -1,18 +1,14 @@
 module SuperNode
-  class Bucket
+  class Bucket < SQueue
 
     attr_accessor :bucket_id, :callback_url
 
     def self.find_or_create_by_bucket_id(options = {})
-      if (_id = options['bucket_id']) && (bucket = redis.get(_id))
+      if (_id = options['bucket_id']).present? && (bucket = redis.get(_id)).present?
         SuperNode::Bucket.new(JSON.parse(bucket))
       else
         SuperNode::Bucket.new(options)
       end
-    end
-
-    def self.exists?(id)
-      redis.exists(id)
     end
 
     def initialize(options = {})
@@ -21,7 +17,11 @@ module SuperNode
       end
 
       verify!
-      self.class.redis.set(self.bucket_id, to_json)
+      set(self.bucket_id, to_json)
+    end
+
+    def queue_id
+      "siq_#{bucket_id}"
     end
 
     def to_json(*)
@@ -42,11 +42,8 @@ module SuperNode
     end
 
     def verify!
-      raise ArgumentError unless bucket_id? && callback_url?
-    end
-
-    def self.redis
-      Sidekiq::Client.redis
+      raise SuperNode::ArgumentError, "Bucket ID cannot be blank." unless bucket_id?
+      raise SuperNode::ArgumentError, "Callback URL cannot be blank" unless callback_url?
     end
   end
 end
