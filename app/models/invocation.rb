@@ -1,16 +1,15 @@
 module SuperNode
   class Invocation
 
-    attr_accessor :klass, :method, :bucket_id, :metadata
+    attr_accessor :klass, :method, :args, :queue_id, :metadata
 
     def initialize(options = {})
       @klass = options["class"]
       options["method"] = options["method"].try(:to_sym) || :perform
 
-      options.slice(*%w(method bucket_id metadata)).each do |type, val|
+      options.slice(*%w(method args queue_id metadata)).each do |type, val|
         send(:"#{type}=", val)
       end
-
       verify!
     end
 
@@ -22,8 +21,9 @@ module SuperNode
       ActiveSupport::JSON.encode({
         "class" => klass.to_s,
         "method" => method,
-        "bucket_id" => bucket_id,
-        "metadata" => metadata
+        "args" => args,
+        "queue_id" => queue_id,
+        "metadata" => metadata,
       })
     end
 

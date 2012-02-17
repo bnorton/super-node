@@ -1,29 +1,29 @@
 require 'spec_helper'
 
 describe SuperNode::Invocation do
-  let(:defaults) {{ "class" => "SuperNode::Nom" }}
+  let(:defaults) {{ "class" => "SuperNode::Nom", "args" => [] }}
     let(:super_node) { mock(SuperNode::Invocation) }
     let(:super_node_worker) { mock(SuperNode::Worker) }
 
   describe "#new" do
     let(:time) { Time.now }
 
-    it "should save the bucket_id" do
+    it "should save the queue_id" do
       inv = SuperNode::Invocation.new(defaults.merge({
-        "bucket_id" => "abc123"
+        "queue_id" => "abc123"
       }))
-      inv.bucket_id.should == "abc123"
+      inv.queue_id.should == "abc123"
     end
 
     it "should save the token" do
       inv = SuperNode::Invocation.new(defaults.merge({
         "metadata" => {
-          "bucket_id" => 1,
+          "queue_id" => 1,
           "created_at" => time
         }
       }))
       inv.metadata.should == {
-        "bucket_id" => 1,
+        "queue_id" => 1,
         "created_at" => time
       }
     end
@@ -31,7 +31,7 @@ describe SuperNode::Invocation do
     it "should error when passed a string" do
       expect {
         SuperNode::Invocation.new("hey")
-        }.to raise_error
+      }.to raise_error
     end
   end
 
@@ -92,19 +92,22 @@ describe SuperNode::Invocation do
   end
 
   describe "#to_json" do
-    it "should save the class" do
+    it "should save the class and args" do
       inv = SuperNode::Invocation.new(defaults.merge({
-        "class" => "SuperNode::Nom"
+        "class" => "SuperNode::Nom",
+        "args" => ['hey', 'there']
       })).to_json
 
-      JSON.parse(inv)['class'].should == "SuperNode::Nom"
+      inv = JSON.parse(inv)
+      inv['class'].should == "SuperNode::Nom"
+      inv['args'].should == ['hey', 'there']
     end
 
     it "should export and import correctly" do
       invocation_json = SuperNode::Invocation.new({
         'class' => 'SuperNode::Nom',
         'method' => 'perform',
-        'bucket_id' => '10'
+        'queue_id' => '10',
       }).to_json
 
       expect {

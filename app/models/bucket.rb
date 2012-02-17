@@ -27,7 +27,7 @@ module SuperNode
     def to_json(*)
       ActiveSupport::JSON.encode({
         "bucket_id" => bucket_id,
-        "callback_url" => callback_url
+        "callback_url" => callback_url,
       })
     end
 

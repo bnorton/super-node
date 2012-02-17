@@ -6,12 +6,12 @@ describe SuperNode::Worker do
   describe "#initialize" do
     describe "manually" do
       before do
-        invocation.stub(:bucket_id).and_return("10")
+        invocation.stub(:queue_id).and_return("10")
         invocation.stub(:to_json).and_return('{"hi": "in there"}')
       end
 
       it "should push the invocation to Sidekiq" do
-        Sidekiq::Client.should_receive(:push).with(invocation.bucket_id, hash_including('args' => ['{"hi": "in there"}']))
+        Sidekiq::Client.should_receive(:push).with(invocation.queue_id, hash_including('args' => ['{"hi": "in there"}']))
 
         SuperNode::Worker.new(invocation)
       end
@@ -23,7 +23,7 @@ describe SuperNode::Worker do
       SuperNode::Invocation.new({
         'class' => 'SuperNode::Nom',
         'method' => 'perform',
-        'bucket_id' => '10'
+        'queue_id' => '10'
       })
     end
 
