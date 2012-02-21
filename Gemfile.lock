@@ -17,7 +17,7 @@ GIT
 
 GIT
   remote: https://github.com/bnorton/sidekiq.git
-  revision: 19c753f3bc88318a797dfd157c544a780f214332
+  revision: d854df85c26323f04b52e1439008396f0c99fe59
   specs:
     sidekiq (0.6.0)
       celluloid
