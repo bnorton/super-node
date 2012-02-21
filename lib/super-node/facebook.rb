@@ -1,7 +1,7 @@
 module SuperNode
   class Facebook < SQueue
 
-    attr_accessor :bucket_id, :access_token, :metadata, :interval
+    attr_accessor :queue_id, :access_token, :metadata
 
     # When Sidekiq is preparing the SuperNode::Facebook object for processing
     #   it calls `new` with not arguments.
@@ -12,17 +12,21 @@ module SuperNode
     end
 
     def setup(options)
-      options['interval'] = options['interval'].to_i || 60 * 5 # 5 minutes
+      options.stringify_keys!
 
-      options.slice(*%w(bucket_id access_token metadata interval)).each do |type, val|
+      options.slice(*%w(queue_id access_token metadata)).each do |type, val|
         send(:"#{type}=", val)
       end
-
+      
+      @queue_id = "sfq_default" if @queue_id.blank?
     end
 
-    # enqueue takes a SuperNode::Facebook argument
-    def enqueue(facebook)
-      setup JSON.parse(facebook)
+    # fethc takes a SuperNode::Facebook argument
+    def fetch(facebook)
+
+      File.open(File.join(Rails.root, 'tmp', "Fb.fetch.log"), 'a+') {|f| f.write("> #{Time.now.utc} <") }
+
+      setup facebook
 
       # Make an Invocation per batch and enqueue each in Sidekiq.
       batchify.each do |batch|
@@ -40,59 +44,59 @@ module SuperNode
       nodes = nil
 
       multi do |redis|
-        nodes = redis.zrange(queue_id, 0, now)
+        nodes = redis.zrangebyscore(queue_id, 0, now)
         redis.zremrangebyscore(queue_id, 0, now)
       end
 
-      facebook_nodes = nodes.map do |node|
-        SuperNode::FacebookNode.from_json(node)
-      end
+      File.open(File.join(Rails.root, 'tmp', "fb_nodes-#{now}"), 'w+') {|f| f.write(nodes.inspect) }
 
       batches = []
-      facebook_nodes.in_groups_of(50, false) do |fbnodes|
+      nodes.in_groups_of(50, false) do |group|
         batches << SuperNode::FacebookBatch.new({
           "access_token" => access_token,
-          "metadata" => metadata,
           "queue_id" => queue_id,
-          "batch" => fbnodes,
+          "batch" => group,
         })
       end
+
       batches
     end
 
     def self.completion(options = {})
-      options['data'].each do |data|
+      File.open(File.join(Rails.root, 'tmp', "fb_#{Time.now.utc.to_s.gsub(' ', '-')}.txt"), 'w+') {|f| f.write("#{options.inspect}") }
+      options['data'].body['data'].each do |data|
         redis.zadd(options['queue_id'], 2, data)
       end
     end
 
     def to_json(*)
-      ActiveSupport::JSON.encode({
-        "bucket_id" => bucket_id,
+      {
+        "queue_id" => queue_id,
         "access_token" => access_token,
         "metadata" => metadata,
-        "interval" => interval,
-      })
+      }
     end
 
     def to_invocation(*)
       SuperNode::Invocation.new({
         "class" => "SuperNode::Facebook",
-        "method" => "enqueue",
+        "method" => "fetch",
         "queue_id" => queue_id,
         "args" => [to_json]
       })
     end
 
-    # What queue we find ourselves on
     def queue_id
-      return "sfq_default" if bucket_id.blank?
-      "sfq_#{bucket_id}"
+      @queue_id ||= 'sfq_default'
     end
 
     # Facebook Graph API URL
-    def base_url
+    def self.base_url
       "https://graph.facebook.com"
+    end
+
+    def self.url_from_paging(url)
+      $1 if url =~ /https?\:\/\/graph\.facebook\.com\/(.+)/
     end
 
     # Facebook 'per-batch' limit
@@ -101,7 +105,7 @@ module SuperNode
     end
 
     def save
-      raise SuperNode::ArgumentError, "A Facebook Access Token is required" unless access_token.present?
+      raise ArgumentError, "A Facebook Access Token is required" unless access_token.present?
     end
   end
 end

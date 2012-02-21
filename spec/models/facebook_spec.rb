@@ -4,7 +4,7 @@ describe SuperNode::Facebook do
   def defaults
     {
       'access_token' => "AAgjk329gsdf3",
-      'bucket_id' => "10",
+      'queue_id' => "10",
     }
   end
 
@@ -23,18 +23,18 @@ describe SuperNode::Facebook do
       facebook.access_token = nil
       expect {
         facebook.save
-      }.to raise_error(SuperNode::ArgumentError)
+      }.to raise_error(ArgumentError)
     end
   end
 
-  describe "#enqueue" do
+  describe "#fetch" do
     before do
-      invocation.stub(:to_json).and_return(ActiveSupport::JSON.encode({
+      invocation.stub(:to_json).and_return({
         "class" => "SuperNode::Facebook",
-        "method" => "enqueue",
-        "args" => [ActiveSupport::JSON.encode({:arg => 'val'})],
+        "method" => "fetch",
+        "args" => [{:arg => 'val'}],
         "queue_id" => "siq_10",
-      }))
+      })
     end
 
     it "should batchify" do
@@ -58,46 +58,56 @@ describe SuperNode::Facebook do
         node = SuperNode::FacebookNode.new({
           'relative_url' => "#{i*20}/feed"
         })
-        red.zadd facebook.queue_id, Time.now.to_i + i, node.to_json
+        red.zadd facebook.queue_id, Time.now.to_i + i, ActiveSupport::JSON.encode(node.to_json)
       end
 
-      now = Time.now.to_i + 100
-      Time.stub(:now).and_return(now) # make sure we get all 51
+      now = Time.now.to_i + 100 # make sure we get all 51
+      Time.stub(:now).and_return(now)
 
       red.zcard(facebook.queue_id).should == 51
 
       batches = facebook.batchify
       batches.length.should == 2
       batches.collect {|b| b.access_token }.uniq.should == [facebook.access_token]
+
+      red.zcard(facebook.queue_id).should == 0
     end
   end
 
   describe "#to_json" do
     it "should return valid attributes" do
-      JSON.parse(facebook.to_json).should == {
-        'bucket_id' => facebook.bucket_id,
+      JSON.parse(ActiveSupport::JSON.encode(facebook.to_json)).should == {
+        'queue_id' => facebook.queue_id,
         'access_token' => facebook.access_token,
         'metadata' => nil,
-        'interval' => facebook.interval,
       }
     end
 
     it "should be reversable" do
-      JSON.parse(facebook.to_json).should == JSON.parse(SuperNode::Facebook.new(JSON.parse(facebook.to_json)).to_json)
+      encoded = ActiveSupport::JSON.encode(facebook.to_json)
+      JSON.parse(encoded).should == JSON.parse(ActiveSupport::JSON.encode(SuperNode::Facebook.new(JSON.parse(encoded)).to_json))
     end
   end
 
   describe "#queue_id" do
     it "should have a default" do
       facebook.save
-      facebook.bucket_id = nil
+      facebook.queue_id = nil
       facebook.queue_id.should =~ /_default/
     end
   end
 
   describe "#base_url" do
     it "should be a graph url" do
-      facebook.base_url.should =~ /graph\.facebook/
+      SuperNode::Facebook.base_url.should =~ /graph\.facebook/
+    end
+  end
+
+  describe "#url_from_paging" do
+    let(:url) { "https://graph.facebook.com/nike/feed?format=json"}
+
+    it "should parse into the relative url" do
+      SuperNode::Facebook.url_from_paging(url).should == "nike/feed?format=json"
     end
   end
 end
