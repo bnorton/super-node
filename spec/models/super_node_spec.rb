@@ -1,10 +1,10 @@
 require 'spec_helper'
 
 describe SuperNode do
-  describe SuperNode::MethodNotFound do
+  describe Exception do
     it "should exist" do
       expect {
-        raise SuperNode::MethodNotFound
+        raise Exception
       }.to raise_error
     end
   end

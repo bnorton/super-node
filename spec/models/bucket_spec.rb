@@ -20,7 +20,7 @@ describe SuperNode::Bucket do
         SuperNode::Bucket.new({
           'callback_url' => "localhost:3000/callback"
         })      
-      }.to raise_error(SuperNode::ArgumentError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should require a callback_url" do
@@ -28,7 +28,7 @@ describe SuperNode::Bucket do
         SuperNode::Bucket.new({
           'bucket_id' => @next_id
         })
-      }.to raise_error(SuperNode::ArgumentError)
+      }.to raise_error(ArgumentError)
     end
 
     it "should save the valid attributes" do
@@ -118,21 +118,21 @@ describe SuperNode::Bucket do
     it "should get the least recently pushed item" do
       bucket.pop.should be_nil
 
-      bucket.push invocation1
-      bucket.push invocation2
+      bucket.push ActiveSupport::JSON.encode(invocation1.to_json)
+      bucket.push ActiveSupport::JSON.encode(invocation2.to_json)
 
-      bucket.pop.should == invocation1.to_json
-      bucket.pop.should == invocation2.to_json
+      JSON.parse(bucket.pop).should == invocation1.to_json
+      JSON.parse(bucket.pop).should == invocation2.to_json
       bucket.pop.should be_nil
     end
   end
 
   describe "#to_json" do
     it "should encode the bucket as json" do
-      bucket_json = JSON.parse(SuperNode::Bucket.new({
+      bucket_json = JSON.parse(ActiveSupport::JSON.encode(SuperNode::Bucket.new({
         'bucket_id' => @next_id,
         'callback_url' => 'anything'
-      }).to_json)
+      }).to_json))
 
       bucket_json.should == {
         "bucket_id" => @next_id,
@@ -141,10 +141,10 @@ describe SuperNode::Bucket do
     end
 
     it "should parse the bucket from json" do
-      bucket_json = SuperNode::Bucket.new({
+      bucket_json = ActiveSupport::JSON.encode(SuperNode::Bucket.new({
         'bucket_id' => @next_id,
         'callback_url' => 'anything'
-      }).to_json
+      }).to_json)
 
       bucket = SuperNode::Bucket.new(JSON.parse(bucket_json))
       bucket.callback_url.should == "anything"
