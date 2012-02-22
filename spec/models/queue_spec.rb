@@ -111,6 +111,17 @@ describe SuperNode::Queue do
     end
   end
 
+  describe "#exit?" do
+    let(:redis) { SQueue.redis }
+
+    it "should be true when a key is set is redis" do
+      queue.exit?.should be_false
+      redis.set("#{queue.queue_id}:exit", 'true')
+
+      queue.exit?.should be_true
+    end
+  end
+
   it_behaves_like "a priority queue"
 
   describe "#to_invocation" do
@@ -121,9 +132,10 @@ describe SuperNode::Queue do
       queue.to_invocation.should == {
         'class' => 'SuperNode::Queue',
         'method' => 'perform',
-        'invocation' => invocation.to_json,
-        'queue_id' => 'content:all',
-        'interval' => 41
+        'args' => [{'invocation' => invocation.to_json,
+          'interval' => 41,
+          'queue_id' => 'content:all',
+        }]
       }
     end
   end

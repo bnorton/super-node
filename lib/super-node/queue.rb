@@ -45,39 +45,33 @@ module SuperNode
     alias_method :count, :zcard
     alias_method :size, :zcard
 
+    # This method is the run loop that pulls items off registered 
+    #   queues after their scheduled time and invokes them
+    # Exit condition: when "#{queue_id}:exit" is set in redis
     def perform(queue = {})
-      setup queue # rehydrate this object from the
-
-      at_inverval
-    end
-
-    def at_inverval(exit = false)
+      setup queue # rehydrate this object (called from a sidekiq worker)
       count = 0
 
       loop do
         before = Time.now.to_f
-
         SuperNode::Invocation.new(invocation).save
 
-        # At each interval pop all items that are
-        #  scheduled to run now or before and invoke them
-        # pop.each do |invocation|
-        #   SuperNode::Invocation.new(invocation).save
-        # end
-
-        return if exit
+        break if exit?
 
         sleep(interval - (Time.now.to_f - before))
-
         count += 1
       end
+    end
+
+    def exit?
+      !!redis.get("#{queue_id}:exit")
     end
 
     def to_invocation
       {
         'class' => 'SuperNode::Queue',
         'method' => 'perform',
-        'args' => [to_json]
+        'args' => [to_json],
       }
     end
 
@@ -85,7 +79,7 @@ module SuperNode
       {
         'invocation' => invocation.to_json,
         'interval' => interval,
-        'queue_id' => queue_id
+        'queue_id' => queue_id,
       }
     end
 

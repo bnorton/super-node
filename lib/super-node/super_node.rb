@@ -1,8 +1,4 @@
 module SuperNode
-
-  # class Exception < Exception; end
-  # class ArgumentError < ArgumentError; end
-
   def self.perform
   end
 

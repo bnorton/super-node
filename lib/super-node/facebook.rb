@@ -18,7 +18,7 @@ module SuperNode
         send(:"#{type}=", val)
       end
       
-      @queue_id = "sfq_default" if @queue_id.blank?
+      @queue_id ||= "sfq_default"
     end
 
     # fethc takes a SuperNode::Facebook argument
@@ -83,10 +83,6 @@ module SuperNode
         "queue_id" => queue_id,
         "args" => [to_json]
       })
-    end
-
-    def queue_id
-      @queue_id ||= 'sfq_default'
     end
 
     # Facebook Graph API URL
