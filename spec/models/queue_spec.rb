@@ -4,9 +4,9 @@ describe SuperNode::Queue do
   let!(:invocation) { mock(SuperNode::Invocation) }
   let(:queue) do
     SuperNode::Queue.new({
-      'invocation' => invocation,
-      'queue_id' => 'content:all',
-      'interval' => 41
+      :invocation => invocation,
+      :queue_id => 'content:all',
+      :interval => 41
     })
   end
 
@@ -113,4 +113,18 @@ describe SuperNode::Queue do
 
   it_behaves_like "a priority queue"
 
+  describe "#to_invocation" do
+    before do
+      invocation.should_receive(:to_json).twice.and_return({'hey' => 'there'})
+    end
+    it "should have the necessary attributes" do
+      queue.to_invocation.should == {
+        'class' => 'SuperNode::Queue',
+        'method' => 'perform',
+        'invocation' => invocation.to_json,
+        'queue_id' => 'content:all',
+        'interval' => 41
+      }
+    end
+  end
 end

@@ -45,6 +45,50 @@ module SuperNode
     alias_method :count, :zcard
     alias_method :size, :zcard
 
+    def perform(queue = {})
+      setup queue # rehydrate this object from the
+
+      at_inverval
+    end
+
+    def at_inverval(exit = false)
+      count = 0
+
+      loop do
+        before = Time.now.to_f
+
+        SuperNode::Invocation.new(invocation).save
+
+        # At each interval pop all items that are
+        #  scheduled to run now or before and invoke them
+        # pop.each do |invocation|
+        #   SuperNode::Invocation.new(invocation).save
+        # end
+
+        return if exit
+
+        sleep(interval - (Time.now.to_f - before))
+
+        count += 1
+      end
+    end
+
+    def to_invocation
+      {
+        'class' => 'SuperNode::Queue',
+        'method' => 'perform',
+        'args' => [to_json]
+      }
+    end
+
+    def to_json
+      {
+        'invocation' => invocation.to_json,
+        'interval' => interval,
+        'queue_id' => queue_id
+      }
+    end
+
     private
 
     def redis

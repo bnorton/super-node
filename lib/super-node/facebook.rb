@@ -24,7 +24,7 @@ module SuperNode
     # fethc takes a SuperNode::Facebook argument
     def fetch(facebook)
 
-      File.open(File.join(Rails.root, 'tmp', "Fb.fetch.log"), 'a+') {|f| f.write("> #{Time.now.utc} <") }
+      File.open(File.join(Rails.root, 'tmp', "Fb.fetch.log"), 'a+') {|f| f.write("> #{Time.now.to_f} <") }
 
       setup facebook
 
@@ -48,14 +48,12 @@ module SuperNode
         redis.zremrangebyscore(queue_id, 0, now)
       end
 
-      File.open(File.join(Rails.root, 'tmp', "fb_nodes-#{now}"), 'w+') {|f| f.write(nodes.inspect) }
-
       batches = []
       nodes.in_groups_of(50, false) do |group|
         batches << SuperNode::FacebookBatch.new({
           "access_token" => access_token,
           "queue_id" => queue_id,
-          "batch" => group,
+          "batch" => group.map { |node| JSON.parse(node) },
         })
       end
 
@@ -63,7 +61,8 @@ module SuperNode
     end
 
     def self.completion(options = {})
-      File.open(File.join(Rails.root, 'tmp', "fb_#{Time.now.utc.to_s.gsub(' ', '-')}.txt"), 'w+') {|f| f.write("#{options.inspect}") }
+      raise "Facebook completion execption"
+
       options['data'].body['data'].each do |data|
         redis.zadd(options['queue_id'], 2, data)
       end

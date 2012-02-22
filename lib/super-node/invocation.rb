@@ -5,13 +5,14 @@ module SuperNode
 
     def initialize(options = {})
       options = JSON.parse(options) if options.kind_of?(String)
+      options.stringify_keys!
+
       @klass = options["class"]
       options["method"] = options["method"].try(:to_sym) || :perform
 
       options.slice(*%w(method args queue_id metadata)).each do |type, val|
         send(:"#{type}=", val)
       end
-
       verify!
     end
 
@@ -32,7 +33,7 @@ module SuperNode
     private
 
     def verify!
-      raise ArgumentError, "A SuperNode::Invocatin needs a target 'class'." unless @klass.present?
+      raise ArgumentError, "A SuperNode::Invocation needs a target 'class'." unless @klass.present?
       raise ArgumentError, "#{@klass} doesn't appear to be a valid constant." unless (@klass.constantize rescue false)
       @klass = @klass.constantize
 

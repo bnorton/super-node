@@ -5,17 +5,31 @@ module SuperNode
       @uri = URI.parse(url)
     end
 
+    def log(type = 'GET')
+      time = Time.now
+      File.open(File.join(Rails.root, 'log', 'http.log'), 'a+') {|f| f.write("#{type}: #{time} - ") }
+      h = yield
+      File.open(File.join(Rails.root, 'log', 'http.log'), 'a+') {|f| f.write("#{Time.now.to_f - time.to_f}\n") }
+      h
+    end
+
     def get
       http = prepare(Net::HTTP.new(@uri.host, 443))
       request = Net::HTTP::Get.new(@uri.request_uri)
-      http.request(request)
+
+      log do
+        http.request(request)
+      end
     end
 
     def post(body = {})
       http = prepare(Net::HTTP.new(@uri.host, 443))
       request = Net::HTTP::Post.new(@uri.request_uri)
       request.set_form_data(body) if body.present?
-      http.request(request)
+
+      log('POST') do
+        http.request(request)
+      end
     end
 
     private

@@ -16,11 +16,11 @@ module SuperNode
 
     def setup(options, response)
       options.stringify_keys!
+      options['method'] = options['method'].try(:upcase) || 'GET'
 
       options.slice(*%w(access_token method relative_url body)).each do |type, val|
         send(:"#{type}=", val)
       end
-      options['method'] = options['method'].try(:upcase) || 'GET'
 
       if response.present?
         parse! response
@@ -68,8 +68,8 @@ module SuperNode
       node = {
         'relative_url' => relative_url,
         'method' => method,
-        'body' => body,
       }
+      node.merge!('body' => body) if body.present?
       node.merge!('access_token' => access_token) if access_token.present?
       node
     end

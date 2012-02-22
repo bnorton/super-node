@@ -162,8 +162,7 @@ describe SuperNode::FacebookNode do
       node.access_token = nil
       node.to_node.should == {
         "relative_url" => "me/feed",
-        "method" => "GET",
-        "body" => nil
+        "method" => "GET"
       }
     end
 
@@ -172,8 +171,18 @@ describe SuperNode::FacebookNode do
       node.to_node.should == {
         "relative_url" => "me/feed",
         "method" => "GET",
+        "access_token" => "AABBaskdfl"
+      }
+    end
+
+    it "should include the body" do
+      node.body = 'hey'
+
+      node.to_node.should == {
+        "relative_url" => "me/feed",
+        "method" => "GET",
+        'body' => 'hey',
         "access_token" => "AABBaskdfl",
-        "body" => nil
       }
     end
   end

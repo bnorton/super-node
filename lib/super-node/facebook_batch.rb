@@ -33,7 +33,8 @@ module SuperNode
         "data" => response,
         "data class" => response.body.class,
         "batch" => facebook_batch.inspect,
-        "response" => JSON.parse(response.body).map{|m| JSON.parse(m["body"])}
+        "response" => JSON.parse(response.body),
+        "to_batch" => to_batch
       })
     end
 
