@@ -51,7 +51,7 @@ describe SuperNode::Worker do
 
   describe "#enqueue" do
     it "should exist" do
-      SuperNode::Worker.new.respond_to?(:enqueue).should be_true
+      SuperNode::Worker.new.respond_to?(:perform).should be_true
     end
   end
 end

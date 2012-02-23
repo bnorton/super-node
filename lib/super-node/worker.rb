@@ -12,6 +12,7 @@ module SuperNode
         # Sidekiq::Client.push(invocation.queue_id, 'class' => 'SuperNode::Worker', 'args' => [invocation.to_json])
         Sidekiq::Client.push(nil, 'class' => 'SuperNode::Worker', 'args' => [invocation.to_json]) rescue nil
         # Sidekiq::Client.push('default', 'class' => 'SuperNode::Worker', 'args' => [invocation.to_json])
+      end
     end
 
     # The Sidekiq client operates on SuperNode::Workers which operate, in turn
