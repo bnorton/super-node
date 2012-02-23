@@ -21,13 +21,15 @@ module SuperNode
     end
 
     def to_json(*)
-      {
+      hash = {
         "class" => klass.to_s,
-        "method" => method,
+        "method" => method.to_s,
         "args" => args,
-        "queue_id" => queue_id,
-        "metadata" => metadata,
       }
+      hash.merge!("queue_id" => queue_id) if queue_id
+      hash.merge!("metadata" => metadata) if metadata
+
+      hash
     end
 
     private

@@ -56,7 +56,7 @@ module SuperNode
         before = Time.now.to_f
         SuperNode::Invocation.new(invocation).save
 
-        break if exit?
+        break if exit? || count > 3
 
         sleep(interval - (Time.now.to_f - before))
         count += 1
@@ -68,11 +68,11 @@ module SuperNode
     end
 
     def to_invocation
-      {
+      SuperNode::Invocation.new({
         'class' => 'SuperNode::Queue',
         'method' => 'perform',
         'args' => [to_json],
-      }
+      })
     end
 
     def to_json

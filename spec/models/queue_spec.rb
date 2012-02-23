@@ -115,9 +115,10 @@ describe SuperNode::Queue do
     let(:redis) { SQueue.redis }
 
     it "should be true when a key is set is redis" do
+      redis.get("#{queue.queue_id}:exit").should be_nil
       queue.exit?.should be_false
-      redis.set("#{queue.queue_id}:exit", 'true')
 
+      redis.set("#{queue.queue_id}:exit", 'true')
       queue.exit?.should be_true
     end
   end
@@ -128,11 +129,21 @@ describe SuperNode::Queue do
     before do
       invocation.should_receive(:to_json).twice.and_return({'hey' => 'there'})
     end
+    # queue = SuperNode::Invocation.new({
+    #   'class' => 'SuperNode::Queue',
+    #   'method' => 'perform',
+    #   'args' => [{
+    #     'invocation' => inv,
+    #     'interval' => 2
+    #   }]
+    # }).to_json
+
     it "should have the necessary attributes" do
-      queue.to_invocation.should == {
+      queue.to_invocation.to_json.should == {
         'class' => 'SuperNode::Queue',
         'method' => 'perform',
-        'args' => [{'invocation' => invocation.to_json,
+        'args' => [{
+          'invocation' => invocation.to_json,
           'interval' => 41,
           'queue_id' => 'content:all',
         }]
