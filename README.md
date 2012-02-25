@@ -25,7 +25,7 @@ Has multiple levels of priority queues that can maintain a strict SLA of content
 SuperNode::Queue.new({
   :interval => 5,
   :invocation => SuperNode::Invocation.new({
-    :class => 'SuperNode::FacebookBatch',
+    :class => 'SuperNode::Facebook::Batch',
     :method => 'save_delete',
     :args => [
       {
@@ -127,7 +127,7 @@ SuperNode::Facebook::Node.new({
 ```
 
 ##Fetching content
-###To fetch content, create a new `SuperNode::Facebook:Node` and call `fetch`
+###To fetch content, create a new `SuperNode::Facebook::Node` and call `fetch`
 
 ####Example
 #####Fetch page information for a Page/User/Message/Comment
