@@ -56,7 +56,7 @@ module SuperNode
         before = Time.now.to_f
         SuperNode::Invocation.new(invocation).save
 
-        break if exit? || count > 3
+        break if count > 10
 
         sleep(interval - (Time.now.to_f - before))
         count += 1

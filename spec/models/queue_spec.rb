@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'models/queueable_examples'
 
 describe SuperNode::Queue do
   let!(:invocation) { mock(SuperNode::Invocation) }
@@ -8,6 +9,10 @@ describe SuperNode::Queue do
       :queue_id => 'content:all',
       :interval => 41
     })
+  end
+
+  describe "a fifo queue" do
+    it_behaves_like "a queueable model"
   end
 
   describe "#initialize" do
@@ -30,89 +35,8 @@ describe SuperNode::Queue do
     end
   end
 
-  shared_examples_for "a priority queue" do
-    let(:items) { [{:v => 2}, {:v => 1}, {:v => -5}] }
-    before do
-      @now = Time.now
-      Time.stub(:now).and_return(@now)
-    end
-
-    describe "#push" do
-      it "should take a string" do
-        queue.push('{"hey": 10}', Time.now-5.minutes)
-        queue.pop.should == [{ 'hey' => 10 }]
-      end
-
-      it "should take a hash" do
-        queue.push({:hey => 10}, Time.now-5.minutes)
-        queue.pop.should == [{ 'hey' => 10 }]
-      end
-
-      it "should take an array" do
-        queue.length.should == 0
-        queue.push(5.times.map {|i| {i.to_s => i } }, (Time.now - 3.minutes))
-        queue.length.should == 5
-
-        items = []
-        queue.pop.each_with_index { |i, j| items << i[j.to_s] }
-        items.should == [0, 1, 2, 3, 4]
-        queue.length.should == 0
-      end
-    end
-
-    describe "#length" do
-      it "should be accurate" do
-        queue.length.should == 0
-        queue.push(['1', '3', '4'])
-        queue.length.should == 3
-      end
-    end
-
-    describe "#size" do
-      it "should be accurate" do
-        queue.size.should == 0
-        queue.push(['1', '3', '4'])
-        queue.size.should == 3
-      end
-    end
-
-    describe "#zcard" do
-      it "should be accurate" do
-        queue.zcard.should == 0
-        queue.push(['1', '3', '4'])
-        queue.zcard.should == 3
-      end
-    end
-
-    describe "#pop" do
-      before do
-        [2, 1, -5].each_with_index do |ago, i|
-          queue.push(items[i], Time.now + ago.minutes)
-        end
-      end
-
-      it "should pop things from the past" do
-        queue.pop.should == [items.last.stringify_keys]
-        queue.pop.should == []
-      end
-
-      it "should return items in order" do
-        queue.pop
-
-        @now += 3.minutes
-        Time.stub(:now).and_return(@now)
-        queue.pop.should == items[0..1].map{ |i| i.stringify_keys }.sort{|x,y| x['v'] <=> y['v']}
-        queue.pop.should == []
-      end
-
-      it "should return a hash" do
-        queue.pop.first.class.should == Hash
-      end
-    end
-  end
-
   describe "#exit?" do
-    let(:redis) { SQueue.redis }
+    let(:redis) { Sidekiq::Client.redis }
 
     it "should be true when a key is set is redis" do
       redis.get("#{queue.queue_id}:exit").should be_nil
@@ -123,20 +47,10 @@ describe SuperNode::Queue do
     end
   end
 
-  it_behaves_like "a priority queue"
-
   describe "#to_invocation" do
     before do
       invocation.should_receive(:to_json).twice.and_return({'hey' => 'there'})
     end
-    # queue = SuperNode::Invocation.new({
-    #   'class' => 'SuperNode::Queue',
-    #   'method' => 'perform',
-    #   'args' => [{
-    #     'invocation' => inv,
-    #     'interval' => 2
-    #   }]
-    # }).to_json
 
     it "should have the necessary attributes" do
       queue.to_invocation.to_json.should == {
