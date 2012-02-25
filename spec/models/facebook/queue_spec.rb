@@ -58,7 +58,7 @@ describe SuperNode::Facebook::Queue do
         node = SuperNode::Facebook::Node.new({
           'relative_url' => "#{i*20}/feed"
         })
-        red.zadd facebook.queue_id, Time.now.to_i + i, ActiveSupport::JSON.encode(node.as_json)
+        red.zadd facebook.queue_id, Time.now.to_i + i, node.as_json.to_json
       end
 
       now = Time.now.to_i + 100 # make sure we get all 51
@@ -76,7 +76,7 @@ describe SuperNode::Facebook::Queue do
 
   describe "#as_json" do
     it "should return valid attributes" do
-      JSON.parse(ActiveSupport::JSON.encode(facebook.as_json)).should == {
+      JSON.parse(facebook.as_json.to_json).should == {
         'queue_id' => facebook.queue_id,
         'access_token' => facebook.access_token,
         'metadata' => nil,
@@ -84,8 +84,8 @@ describe SuperNode::Facebook::Queue do
     end
 
     it "should be reversable" do
-      encoded = ActiveSupport::JSON.encode(facebook.as_json)
-      JSON.parse(encoded).should == JSON.parse(ActiveSupport::JSON.encode(SuperNode::Facebook::Queue.new(JSON.parse(encoded)).as_json))
+      encoded = facebook.as_json.to_json
+      JSON.parse(encoded).should == JSON.parse(SuperNode::Facebook::Queue.new(JSON.parse(encoded)).as_json.to_json)
     end
   end
 

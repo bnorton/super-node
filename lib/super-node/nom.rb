@@ -13,7 +13,7 @@ module SuperNode
           t
         end
       end
-      File.open(File.join(Rails.root, 'tmp', "nom#{Time.now.to_f}.txt"), 'w+') {|f| f.write("TIME: #{time} - #{ActiveSupport::JSON.encode(items)}") }
+      File.open(File.join(Rails.root, 'tmp', "nom#{Time.now.to_f}.txt"), 'w+') {|f| f.write("TIME: #{time} - #{items.to_json}") }
     end
 
     def perform

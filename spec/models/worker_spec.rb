@@ -32,7 +32,7 @@ describe SuperNode::Worker do
     end
 
     it "should be called with a valid invocation object" do
-      invocation_json = ActiveSupport::JSON.encode(invocation.as_json)
+      invocation_json = invocation.as_json.to_json
 
       expect {
         SuperNode::Invocation.new(JSON.parse(invocation_json))

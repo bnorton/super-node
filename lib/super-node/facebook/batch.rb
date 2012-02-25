@@ -60,7 +60,7 @@ module SuperNode
       end
 
       def batch_json
-        @batch_json ||= ActiveSupport::JSON.encode(batch)
+        @batch_json ||= batch.to_json
       end
     end
   end

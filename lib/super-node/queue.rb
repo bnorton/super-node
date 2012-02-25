@@ -19,7 +19,7 @@ module SuperNode
       inputs = [inputs] unless inputs.kind_of?(Array)
 
       inputs.each do |input|
-        input = ActiveSupport::JSON.encode(input) unless input.kind_of?(String)
+        input = input.to_json unless input.kind_of?(String)
         redis.zadd(queue_id, time.to_i, input)
       end
     end
