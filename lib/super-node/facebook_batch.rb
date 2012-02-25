@@ -17,10 +17,6 @@ module SuperNode
       end
     end
 
-    def save_delete(facebook_batch)
-
-    end
-
     def fetch(facebook_batch)
       setup facebook_batch # re-hydrate self with its attributes.
 
@@ -39,7 +35,7 @@ module SuperNode
     end
 
     def to_json(*)
-      @json ||= {
+      @to_json ||= {
         "queue_id" => queue_id,
         "access_token" => access_token,
         "batch" => batch,
@@ -56,14 +52,14 @@ module SuperNode
     end
 
     def to_batch(*)
-      {
+      @to_batch ||= {
         "access_token" => access_token,
         "batch" => batch_json
       }
     end
 
     def batch_json
-      ActiveSupport::JSON.encode(batch)
+      @batch_json ||= ActiveSupport::JSON.encode(batch)
     end
   end
 end
