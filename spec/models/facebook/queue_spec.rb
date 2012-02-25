@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SuperNode::Facebook do
+describe SuperNode::Facebook::Queue do
   def defaults
     {
       'access_token' => "AAgjk329gsdf3",
@@ -8,9 +8,9 @@ describe SuperNode::Facebook do
     }
   end
 
-  let!(:facebook) { SuperNode::Facebook.new(defaults) }
+  let!(:facebook) { SuperNode::Facebook::Queue.new(defaults) }
   let(:invocation) { mock(SuperNode::Invocation) }
-  let(:batch) { mock(SuperNode::FacebookBatch) }
+  let(:batch) { mock(SuperNode::Facebook::Batch) }
 
   describe "#initialize" do
     it "should be valid" do
@@ -30,7 +30,7 @@ describe SuperNode::Facebook do
   describe "#fetch" do
     before do
       invocation.stub(:to_json).and_return({
-        "class" => "SuperNode::Facebook",
+        "class" => "SuperNode::Facebook::Queue",
         "method" => "fetch",
         "args" => [{:arg => 'val'}],
         "queue_id" => "siq_10",
@@ -38,7 +38,7 @@ describe SuperNode::Facebook do
     end
 
     it "should batchify" do
-      SuperNode::Facebook.should_receive(:new).twice.and_return(facebook)
+      SuperNode::Facebook::Queue.should_receive(:new).twice.and_return(facebook)
 
       facebook.should_receive(:batchify).and_return([batch])
       invocation.should_receive(:save)
@@ -55,7 +55,7 @@ describe SuperNode::Facebook do
 
     it "should create two batches" do
       51.times do |i|
-        node = SuperNode::FacebookNode.new({
+        node = SuperNode::Facebook::Node.new({
           'relative_url' => "#{i*20}/feed"
         })
         red.zadd facebook.queue_id, Time.now.to_i + i, ActiveSupport::JSON.encode(node.to_json)
@@ -85,7 +85,7 @@ describe SuperNode::Facebook do
 
     it "should be reversable" do
       encoded = ActiveSupport::JSON.encode(facebook.to_json)
-      JSON.parse(encoded).should == JSON.parse(ActiveSupport::JSON.encode(SuperNode::Facebook.new(JSON.parse(encoded)).to_json))
+      JSON.parse(encoded).should == JSON.parse(ActiveSupport::JSON.encode(SuperNode::Facebook::Queue.new(JSON.parse(encoded)).to_json))
     end
   end
 
@@ -99,7 +99,7 @@ describe SuperNode::Facebook do
 
   describe "#base_url" do
     it "should be a graph url" do
-      SuperNode::Facebook.base_url.should =~ /graph\.facebook/
+      SuperNode::Facebook::Queue.base_url.should =~ /graph\.facebook/
     end
   end
 
@@ -107,7 +107,7 @@ describe SuperNode::Facebook do
     let(:url) { "https://graph.facebook.com/nike/feed?format=json"}
 
     it "should parse into the relative url" do
-      SuperNode::Facebook.url_from_paging(url).should == "nike/feed?format=json"
+      SuperNode::Facebook::Queue.url_from_paging(url).should == "nike/feed?format=json"
     end
   end
 end

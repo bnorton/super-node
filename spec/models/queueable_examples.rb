@@ -22,9 +22,9 @@ shared_examples "a queueable model" do
       queue.push(5.times.map {|i| {i.to_s => i } }, (Time.now - 3.minutes))
       queue.length.should == 5
 
-      items = []
-      queue.pop.each_with_index { |i, j| items << i[j.to_s] }
-      items.should == [0, 1, 2, 3, 4]
+      list = []
+      queue.pop.each_with_index { |i, j| list << i[j.to_s] }
+      list.should == [0, 1, 2, 3, 4]
       queue.length.should == 0
     end
   end
@@ -61,7 +61,7 @@ shared_examples "a queueable model" do
 end
 
 shared_examples "a priority queue" do
-  # it_behaves_like "a queue"
+  it_behaves_like "a queue"
 
   describe "#zcard" do
     it "should be accurate" do

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SuperNode::FacebookNode do
+describe SuperNode::Facebook::Node do
   def defaults
     {
       "access_token" => "AABBaskdfl",
@@ -15,9 +15,7 @@ describe SuperNode::FacebookNode do
   end
 
   describe "#initialize" do
-    let(:facebook) do
-      SuperNode::FacebookNode.new(defaults) 
-    end
+    let(:facebook) { SuperNode::Facebook::Node.new(defaults) }
 
     describe "#validations" do
       it "should be valid" do
@@ -36,7 +34,7 @@ describe SuperNode::FacebookNode do
   end
 
   describe "#to_json" do
-    let(:node) { SuperNode::FacebookNode.new(defaults).tap(&:save) }
+    let(:node) { SuperNode::Facebook::Node.new(defaults).tap(&:save) }
 
     it "should include all attributes" do
       node.to_json.should == node.to_node
@@ -44,7 +42,7 @@ describe SuperNode::FacebookNode do
   end
 
   describe "when the Node has been fetched" do
-    let!(:before_node) { SuperNode::FacebookNode.new(defaults.merge(:body => "hi")).tap(&:save) }
+    let!(:before_node) { SuperNode::Facebook::Node.new(defaults.merge(:body => "hi")).tap(&:save) }
     let!(:response) do
       {
         "code"=>200,
@@ -64,7 +62,7 @@ describe SuperNode::FacebookNode do
         }"
       }
     end
-    let!(:after_node) { SuperNode::FacebookNode.new(before_node.to_json, response) }
+    let!(:after_node) { SuperNode::Facebook::Node.new(before_node.to_json, response) }
 
     describe "#method" do
       it "should stay the same" do
@@ -144,20 +142,20 @@ describe SuperNode::FacebookNode do
 
       describe "#next_page" do
         it "should create a SuperNode::Facebook::Node for the next page" do
-          after_node.next_page.class.should == SuperNode::FacebookNode
+          after_node.next_page.class.should == SuperNode::Facebook::Node
         end
       end
 
       describe "#previous_page" do
         it "should create a SuperNode::Facebook::Node for the previous page" do
-          after_node.previous_page.class.should == SuperNode::FacebookNode
+          after_node.previous_page.class.should == SuperNode::Facebook::Node
         end
       end
     end
   end
 
   describe "#to_node" do
-    let(:node) { SuperNode::FacebookNode.new(defaults).tap(&:save) }
+    let(:node) { SuperNode::Facebook::Node.new(defaults).tap(&:save) }
     it "should leave off the access token" do
       node.access_token = nil
       node.to_node.should == {

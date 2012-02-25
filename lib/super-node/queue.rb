@@ -17,7 +17,6 @@ module SuperNode
 
     def push(inputs, time = Time.now)
       inputs = [inputs] unless inputs.kind_of?(Array)
-      items = []
 
       inputs.each do |input|
         input = ActiveSupport::JSON.encode(input) unless input.kind_of?(String)
@@ -49,22 +48,22 @@ module SuperNode
     #   queues after their scheduled time and invokes them
     # Exit condition: when "#{queue_id}:exit" is set in redis
     def perform(queue = {})
-      setup queue # rehydrate this object (called from a sidekiq worker)
+      setup queue unless queue.blank? # rehydrate this object (called from a sidekiq worker)
       count = 0
 
       loop do
         before = Time.now.to_f
         SuperNode::Invocation.new(invocation).save
 
-        break if count > 10
+        break if exit?(count)
 
         sleep(interval - (Time.now.to_f - before))
         count += 1
       end
     end
 
-    def exit?
-      !!redis.get("#{queue_id}:exit")
+    def exit?(count = 0)
+      !!redis.get("#{queue_id}:exit") || count > 10
     end
 
     def to_invocation
