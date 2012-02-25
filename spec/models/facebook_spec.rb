@@ -51,7 +51,7 @@ describe SuperNode::Facebook do
   end
 
   describe "#batchify" do
-    let(:red) { SuperNode::Facebook.redis }
+    let(:red) { Sidekiq::Client.redis }
 
     it "should create two batches" do
       51.times do |i|

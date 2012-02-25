@@ -1,5 +1,5 @@
 module SuperNode
-  class Facebook < SQueue
+  class Facebook
 
     attr_accessor :queue_id, :access_token, :metadata
 
@@ -17,8 +17,6 @@ module SuperNode
       options.slice(*%w(queue_id access_token metadata)).each do |type, val|
         send(:"#{type}=", val)
       end
-      
-      @queue_id ||= "sfq_default"
     end
 
     # fethc takes a SuperNode::Facebook argument
@@ -43,9 +41,9 @@ module SuperNode
       now = Time.now.to_i
       nodes = nil
 
-      multi do |redis|
-        nodes = redis.zrangebyscore(queue_id, 0, now)
-        redis.zremrangebyscore(queue_id, 0, now)
+      Sidekiq::Client.redis.with do |r|
+        nodes = r.zrangebyscore(queue_id, 0, now)
+        r.zremrangebyscore(queue_id, 0, now)
       end
 
       batches = []
@@ -88,6 +86,10 @@ module SuperNode
     # Facebook Graph API URL
     def self.base_url
       "https://graph.facebook.com"
+    end
+
+    def queue_id
+      @queue_id ||= 'sfq_default'
     end
 
     def self.url_from_paging(url)
