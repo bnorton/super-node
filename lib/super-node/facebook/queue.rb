@@ -65,7 +65,7 @@ module SuperNode
         #end
       end
 
-      def to_json(*)
+      def as_json(*)
         {
           "queue_id" => queue_id,
           "access_token" => access_token,
@@ -78,7 +78,7 @@ module SuperNode
           "class" => "SuperNode::Facebook::Queue",
           "method" => "fetch",
           "queue_id" => queue_id,
-          "args" => [to_json]
+          "args" => [as_json]
         })
       end
 

@@ -91,12 +91,12 @@ describe SuperNode::Invocation do
     end
   end
 
-  describe "#to_json" do
+  describe "#as_json" do
     it "should save the class and args" do
       inv = ActiveSupport::JSON.encode(SuperNode::Invocation.new(defaults.merge({
         "class" => "SuperNode::Nom",
         "args" => ['hey', 'there']
-      })).to_json)
+      })).as_json)
 
       inv = JSON.parse(inv)
       inv['class'].should == "SuperNode::Nom"
@@ -108,7 +108,7 @@ describe SuperNode::Invocation do
         'class' => 'SuperNode::Nom',
         'method' => 'perform',
         'queue_id' => '10',
-      }).to_json)
+      }).as_json)
 
       expect {
         SuperNode::Invocation.new(JSON.parse(invocation_json))

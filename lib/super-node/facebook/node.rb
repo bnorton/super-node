@@ -61,7 +61,7 @@ module SuperNode
         @previous_page ||= SuperNode::Facebook::Node.new(pagination['previous_page'])
       end
 
-      def to_json(*)
+      def as_json(*)
         to_node
       end
 

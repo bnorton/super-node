@@ -33,11 +33,11 @@ describe SuperNode::Facebook::Node do
     end
   end
 
-  describe "#to_json" do
+  describe "#as_json" do
     let(:node) { SuperNode::Facebook::Node.new(defaults).tap(&:save) }
 
     it "should include all attributes" do
-      node.to_json.should == node.to_node
+      node.as_json.should == node.to_node
     end
   end
 
@@ -62,7 +62,7 @@ describe SuperNode::Facebook::Node do
         }"
       }
     end
-    let!(:after_node) { SuperNode::Facebook::Node.new(before_node.to_json, response) }
+    let!(:after_node) { SuperNode::Facebook::Node.new(before_node.as_json, response) }
 
     describe "#method" do
       it "should stay the same" do

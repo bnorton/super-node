@@ -8,7 +8,7 @@ module SuperNode
 
       if invocation.present?
         @invocation = invocation
-        Sidekiq::Client.push(nil, 'class' => 'SuperNode::Worker', 'args' => [@invocation.to_json]) rescue nil
+        Sidekiq::Client.push(nil, 'class' => 'SuperNode::Worker', 'args' => [@invocation.as_json]) rescue nil
       end
     end
 

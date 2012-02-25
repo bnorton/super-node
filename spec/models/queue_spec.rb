@@ -49,15 +49,15 @@ describe SuperNode::Queue do
 
   describe "#to_invocation" do
     before do
-      invocation.should_receive(:to_json).twice.and_return({'hey' => 'there'})
+      invocation.should_receive(:as_json).twice.and_return({'hey' => 'there'})
     end
 
     it "should have the necessary attributes" do
-      queue.to_invocation.to_json.should == {
+      queue.to_invocation.as_json.should == {
         'class' => 'SuperNode::Queue',
         'method' => 'perform',
         'args' => [{
-          'invocation' => invocation.to_json,
+          'invocation' => invocation.as_json,
           'interval' => 41,
           'queue_id' => 'content:all',
         }]

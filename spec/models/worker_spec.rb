@@ -7,7 +7,7 @@ describe SuperNode::Worker do
     describe "manually" do
       before do
         # invocation.stub(:queue_id).and_return("10")
-        invocation.stub(:to_json).and_return('{"hi": "in there"}')
+        invocation.stub(:as_json).and_return('{"hi": "in there"}')
       end
 
       it "should push the invocation to Sidekiq" do
@@ -32,7 +32,7 @@ describe SuperNode::Worker do
     end
 
     it "should be called with a valid invocation object" do
-      invocation_json = ActiveSupport::JSON.encode(invocation.to_json)
+      invocation_json = ActiveSupport::JSON.encode(invocation.as_json)
 
       expect {
         SuperNode::Invocation.new(JSON.parse(invocation_json))

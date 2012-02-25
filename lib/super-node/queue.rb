@@ -70,13 +70,13 @@ module SuperNode
       SuperNode::Invocation.new({
         'class' => 'SuperNode::Queue',
         'method' => 'perform',
-        'args' => [to_json],
+        'args' => [as_json],
       })
     end
 
-    def to_json
+    def as_json
       {
-        'invocation' => invocation.to_json,
+        'invocation' => invocation.as_json,
         'interval' => interval,
         'queue_id' => queue_id,
       }

@@ -35,8 +35,8 @@ module SuperNode
         })
       end
 
-      def to_json(*)
-        @to_json ||= {
+      def as_json(*)
+        @as_json ||= {
           "queue_id" => queue_id,
           "access_token" => access_token,
           "batch" => batch,
@@ -48,7 +48,7 @@ module SuperNode
           "class" => "SuperNode::FacebookBatch",
           "method" => "fetch",
           "queue_id" => queue_id,
-          "args" => [to_json],
+          "args" => [as_json],
         })
       end
 

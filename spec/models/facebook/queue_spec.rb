@@ -29,7 +29,7 @@ describe SuperNode::Facebook::Queue do
 
   describe "#fetch" do
     before do
-      invocation.stub(:to_json).and_return({
+      invocation.stub(:as_json).and_return({
         "class" => "SuperNode::Facebook::Queue",
         "method" => "fetch",
         "args" => [{:arg => 'val'}],
@@ -44,7 +44,7 @@ describe SuperNode::Facebook::Queue do
       invocation.should_receive(:save)
       batch.should_receive(:to_invocation).and_return(invocation)
 
-      SuperNode::Worker.new.perform(invocation.to_json)
+      SuperNode::Worker.new.perform(invocation.as_json)
     end
 
   it "should enqueue as many workers as batches"
@@ -58,7 +58,7 @@ describe SuperNode::Facebook::Queue do
         node = SuperNode::Facebook::Node.new({
           'relative_url' => "#{i*20}/feed"
         })
-        red.zadd facebook.queue_id, Time.now.to_i + i, ActiveSupport::JSON.encode(node.to_json)
+        red.zadd facebook.queue_id, Time.now.to_i + i, ActiveSupport::JSON.encode(node.as_json)
       end
 
       now = Time.now.to_i + 100 # make sure we get all 51
@@ -74,9 +74,9 @@ describe SuperNode::Facebook::Queue do
     end
   end
 
-  describe "#to_json" do
+  describe "#as_json" do
     it "should return valid attributes" do
-      JSON.parse(ActiveSupport::JSON.encode(facebook.to_json)).should == {
+      JSON.parse(ActiveSupport::JSON.encode(facebook.as_json)).should == {
         'queue_id' => facebook.queue_id,
         'access_token' => facebook.access_token,
         'metadata' => nil,
@@ -84,8 +84,8 @@ describe SuperNode::Facebook::Queue do
     end
 
     it "should be reversable" do
-      encoded = ActiveSupport::JSON.encode(facebook.to_json)
-      JSON.parse(encoded).should == JSON.parse(ActiveSupport::JSON.encode(SuperNode::Facebook::Queue.new(JSON.parse(encoded)).to_json))
+      encoded = ActiveSupport::JSON.encode(facebook.as_json)
+      JSON.parse(encoded).should == JSON.parse(ActiveSupport::JSON.encode(SuperNode::Facebook::Queue.new(JSON.parse(encoded)).as_json))
     end
   end
 

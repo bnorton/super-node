@@ -20,7 +20,7 @@ module SuperNode
       SuperNode::Worker.new(self)
     end
 
-    def to_json(*)
+    def as_json(*)
       hash = {
         "class" => klass.to_s,
         "method" => method.to_s,
