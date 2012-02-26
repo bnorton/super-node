@@ -7,9 +7,10 @@ module SuperNode
 
     def log(type = 'GET')
       time = Time.now
-      File.open(File.join(Rails.root, 'log', 'http.log'), 'a+') {|f| f.write("#{type}: #{time} - ") }
+      log = "#{type}: #{time} - "
       h = yield
-      File.open(File.join(Rails.root, 'log', 'http.log'), 'a+') {|f| f.write("#{Time.now.to_f - time.to_f}\n") }
+      log << "#{Time.now.to_f - time.to_f}\n"
+      File.open(File.join(Rails.root, 'log', 'http.log'), 'a+') {|f| f.write(log) }
       h
     end
 
