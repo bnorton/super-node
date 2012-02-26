@@ -46,7 +46,7 @@ RSpec.configure do |config|
     # load Rails.root.join('db', 'seeds.rb')
     WebMock.disable_net_connect!(:allow_localhost => true)
     DatabaseCleaner.start
-    Sidekiq::Client.redis.flushall
+    Sidekiq.redis.flushall
   end
 
   # [:model, :controller, :request].each do |example_type|

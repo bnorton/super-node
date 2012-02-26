@@ -85,7 +85,7 @@ module SuperNode
     private
 
     def redis
-      Sidekiq::Client.redis
+      Sidekiq.redis
     end
   end
 end

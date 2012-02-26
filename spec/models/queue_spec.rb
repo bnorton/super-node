@@ -36,7 +36,7 @@ describe SuperNode::Queue do
   end
 
   describe "#exit?" do
-    let(:redis) { Sidekiq::Client.redis }
+    let(:redis) { Sidekiq.redis }
 
     it "should be true when a key is set is redis" do
       redis.get("#{queue.queue_id}:exit").should be_nil

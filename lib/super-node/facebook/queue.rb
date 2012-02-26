@@ -40,7 +40,7 @@ module SuperNode
         now = Time.now.to_i
         nodes = nil
 
-        Sidekiq::Client.redis.with do |r|
+        Sidekiq.redis.with do |r|
           nodes = r.zrangebyscore(queue_id, 0, now)
           r.zremrangebyscore(queue_id, 0, now)
         end
