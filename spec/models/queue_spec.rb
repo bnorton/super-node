@@ -7,13 +7,11 @@ describe SuperNode::Queue do
     SuperNode::Queue.new({
       :invocation => invocation,
       :queue_id => 'content:all',
-      :interval => 41
+      :interval => 41,
     })
   end
 
-  describe "a fifo queue" do
-    it_behaves_like "a queueable model"
-  end
+  it_behaves_like "a queue"
 
   describe "#initialize" do
     it "should gracefully handle 0 argument init" do

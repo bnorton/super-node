@@ -2,6 +2,8 @@ module SuperNode
   module Facebook
     class Queue
 
+      include SuperNode::PriorityQueueable
+
       attr_accessor :queue_id, :access_token, :metadata
 
       def initialize(options = {})
@@ -18,7 +20,7 @@ module SuperNode
         end
       end
 
-      # fetch takes a SuperNode::Facebook argument
+      # facebook - a serialized SuperNode::Facebook::Queue
       def fetch(facebook)
 
         File.open(File.join(Rails.root, 'tmp', "Fb.fetch.log"), 'a+') {|f| f.write("> #{Time.now.to_f} <") }
@@ -26,43 +28,28 @@ module SuperNode
         setup facebook
 
         # Make an Invocation per batch and enqueue each in Sidekiq.
-        batchify.each do |batch|
+        bat = batchify
+        bat.each do |batch|
           batch.to_invocation.save
         end
       end
 
-      # The Facebook Batch API is useful here
-      #   See: `https://developers.facebook.com/docs/reference/api/batch/`
+      # See: `https://developers.facebook.com/docs/reference/api/batch/`
       # Pull all SuperNode::Facebook::Node(s) that were pushed up to now and
-      # batchify them into as many workers as it takes.
-      #
+      # batch them into as many workers as it takes.
       def batchify
-        now = Time.now.to_i
-        nodes = nil
-
-        Sidekiq.redis.with do |r|
-          nodes = r.zrangebyscore(queue_id, 0, now)
-          r.zremrangebyscore(queue_id, 0, now)
-        end
-
+        nodes = pop(Time.now)
         batches = []
+
         nodes.in_groups_of(50, false) do |group|
           batches << SuperNode::Facebook::Batch.new({
-            "access_token" => access_token,
-            "queue_id" => queue_id,
-            "batch" => group.map { |node| JSON.parse(node) },
+            :access_token => access_token,
+            :queue_id => queue_id,
+            :batch => group,
           })
         end
 
         batches
-      end
-
-      def self.completion(options = {})
-        raise "Facebook completion execption"
-
-        #options['data'].body['data'].each do |data|
-        #  redis.zadd(options['queue_id'], 2, data)
-        #end
       end
 
       def as_json(*)
@@ -75,14 +62,13 @@ module SuperNode
 
       def to_invocation(*)
         SuperNode::Invocation.new({
-          "class" => "SuperNode::Facebook::Queue",
-          "method" => "fetch",
-          "queue_id" => queue_id,
-          "args" => [as_json]
+          :class => "SuperNode::Facebook::Queue",
+          :method => "fetch",
+          :queue_id => queue_id,
+          :args => [as_json]
         })
       end
 
-      # Facebook Graph API URL
       def self.base_url
         "https://graph.facebook.com"
       end
@@ -95,7 +81,6 @@ module SuperNode
         $1 if url =~ /https?\:\/\/graph\.facebook\.com\/(.+)/
       end
 
-      # Facebook 'per-batch' limit
       def batch_size
         50
       end

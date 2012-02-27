@@ -83,9 +83,6 @@ describe SuperNode::Facebook::Node do
     end
 
     describe "#metadata" do
-      it "should stay the same" do
-        pending "metadata not yet stored on nodes"
-      end
     end
 
     describe "#code" do

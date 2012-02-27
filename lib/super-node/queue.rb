@@ -1,6 +1,8 @@
 module SuperNode
   class Queue
 
+    include SuperNode::Queueable
+
     attr_accessor :invocation, :interval, :queue_id
 
     def initialize(options = {})
@@ -14,35 +16,6 @@ module SuperNode
         send(:"#{type}=", val)
       end
     end
-
-    def push(inputs, time = Time.now)
-      inputs = [inputs] unless inputs.kind_of?(Array)
-
-      inputs.each do |input|
-        input = input.to_json unless input.kind_of?(String)
-        redis.zadd(queue_id, time.to_i, input)
-      end
-    end
-
-    def pop(time = Time.now)
-      time = time.to_i
-      items = []
-
-      redis.with do |r| # redis MULTI/EXEC
-        items = r.zrangebyscore(queue_id, 0, time)
-        r.zremrangebyscore(queue_id, 0, time)
-      end
-
-      items.map {|i| JSON.parse(i) rescue {} }
-    end
-
-    def zcard
-      redis.zcard(queue_id)
-    end
-
-    alias_method :length, :zcard
-    alias_method :count, :zcard
-    alias_method :size, :zcard
 
     # This method is the run loop that pulls items off registered 
     #   queues after their scheduled time and invokes them
@@ -66,26 +39,20 @@ module SuperNode
       !!redis.get("#{queue_id}:exit") || count > 10
     end
 
-    def to_invocation
+    def to_invocation(*)
       SuperNode::Invocation.new({
-        'class' => 'SuperNode::Queue',
-        'method' => 'perform',
-        'args' => [as_json],
+        :class => 'SuperNode::Queue',
+        :method => 'perform',
+        :args => [as_json],
       })
     end
 
-    def as_json
+    def as_json(*)
       {
         'invocation' => invocation.as_json,
         'interval' => interval,
         'queue_id' => queue_id,
       }
-    end
-
-    private
-
-    def redis
-      Sidekiq.redis
     end
   end
 end
