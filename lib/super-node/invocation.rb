@@ -7,8 +7,8 @@ module SuperNode
       options = JSON.parse(options) if options.kind_of?(String)
       options.stringify_keys!
 
-      @klass = options["class"]
-      options["method"] = options["method"].try(:to_sym) || :perform
+      @klass = options['class']
+      options['method'] = options['method'].try(:to_sym) || :perform
 
       options.slice(*%w(method args queue_id metadata)).each do |type, val|
         send(:"#{type}=", val)
@@ -22,12 +22,12 @@ module SuperNode
 
     def as_json(*)
       hash = {
-        "class" => klass.to_s,
-        "method" => method.to_s,
-        "args" => args,
+        'class' => klass.to_s,
+        'method' => method.to_s,
+        'args' => args,
       }
-      hash.merge!("queue_id" => queue_id) if queue_id
-      hash.merge!("metadata" => metadata) if metadata
+      hash.merge!('queue_id' => queue_id) if queue_id
+      hash.merge!('metadata' => metadata) if metadata
 
       hash
     end
@@ -35,11 +35,11 @@ module SuperNode
     private
 
     def verify!
-      raise ArgumentError, "A SuperNode::Invocation needs a target 'class'." unless @klass.present?
+      raise ArgumentError, 'A SuperNode::Invocation needs a target :class.' unless @klass.present?
       raise ArgumentError, "#{@klass} doesn't appear to be a valid constant." unless (@klass.constantize rescue false)
       @klass = @klass.constantize
 
-      raise Exception, "Class: #{@klass} didn't respond to method: #{@method}" unless @klass.new.respond_to?(@method)
+      raise Exception, "A new instance of: #{@klass} didn't respond to: #{@method}" unless @klass.new.respond_to?(@method)
     end
   end
 end
