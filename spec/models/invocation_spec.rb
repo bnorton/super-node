@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe SuperNode::Invocation do
-  let(:defaults) {{ "class" => "SuperNode::Nom", "args" => [] }}
+  let(:defaults) {{ :class => "SuperNode::Nom", :args => [] }}
     let(:invocation) { mock(SuperNode::Invocation) }
     let(:super_node_worker) { mock(SuperNode::Worker) }
 
@@ -10,7 +10,7 @@ describe SuperNode::Invocation do
 
     it "should save the queue_id" do
       inv = SuperNode::Invocation.new(defaults.merge({
-        "queue_id" => "abc123"
+        :queue_id => "abc123"
       }))
       inv.queue_id.should == "abc123"
     end
@@ -18,14 +18,14 @@ describe SuperNode::Invocation do
     it "should save the token" do
       inv = SuperNode::Invocation.new(
         defaults.merge({
-          "metadata" => {
-          "queue_id" => 1,
-          "created_at" => time
+          :metadata => {
+          :queue_id => 1,
+          :created_at => time
         }
       }))
       inv.metadata.should == {
-        "queue_id" => 1,
-        "created_at" => time
+        :queue_id => 1,
+        :created_at => time
       }
     end
 
@@ -43,17 +43,17 @@ describe SuperNode::Invocation do
       }.to raise_error(ArgumentError)
     end
 
-    it "should require a existant class" do
-      (!!defined?(SuperNode::Facebook::Node)).should be_true
+    it "should require a existent class that responds to perform" do
+      (!!defined?(SuperNode::Worker)).should be_true
       expect {
-        SuperNode::Invocation.new({ 'class' => "SuperNode::Facebook::Batch"})
+        SuperNode::Invocation.new({ :class => "SuperNode::Worker"})
       }.not_to raise_error
     end
 
     it "should error on a non-existant class" do
       (!!defined?(RandonClassNameHere)).should be_false
       expect {
-        SuperNode::Invocation.new({ 'class' => "RandomClassNameHere"})
+        SuperNode::Invocation.new({ :class => "RandomClassNameHere"})
       }.to raise_error(ArgumentError)
 
 
@@ -61,14 +61,14 @@ describe SuperNode::Invocation do
 
     it "should respond to perform" do
       expect {
-        SuperNode::Invocation.new({ 'class' => "SuperNode::Nom"})
+        SuperNode::Invocation.new({ :class => "SuperNode::Nom"})
       }.not_to raise_error
     end
 
     it "should error when it doesn't respond to perform" do
     Class.new.respond_to?(:perform).should be_false
       expect {
-        SuperNode::Invocation.new({ 'class' => "Class"})
+        SuperNode::Invocation.new({ :class => "Class"})
       }.to raise_error(Exception)
     end
 

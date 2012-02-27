@@ -1,13 +1,6 @@
 require 'spec_helper'
 
 describe SuperNode do
-  describe Exception do
-    it "should exist" do
-      expect {
-        raise Exception
-      }.to raise_error
-    end
-  end
   describe "#perform" do
     it "should exist" do
       SuperNode.respond_to?(:perform).should be_true

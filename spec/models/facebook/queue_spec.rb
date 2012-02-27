@@ -4,8 +4,8 @@ require 'models/queueable_examples'
 describe SuperNode::Facebook::Queue do
   def defaults
     {
-      'access_token' => "AAgjk329gsdf3",
-      'queue_id' => "11",
+      :access_token => "AAgjk329gsdf3",
+      :queue_id => "11",
     }
   end
 
@@ -33,10 +33,10 @@ describe SuperNode::Facebook::Queue do
   describe "#fetch" do
     def defaults
       {
-        "class" => "SuperNode::Facebook::Queue",
-        "method" => "fetch",
-        "args" => [{:arg => 'val'}],
-        "queue_id" => "siq_10"
+        :class => "SuperNode::Facebook::Queue",
+        :method => "fetch",
+        :args => [{:arg => 'val'}],
+        :queue_id => "siq_10"
       }
     end
 
@@ -68,7 +68,7 @@ describe SuperNode::Facebook::Queue do
     it "should create two batches" do
       51.times do |i|
         node = SuperNode::Facebook::Node.new({
-          'relative_url' => "#{i*20}/feed"
+          :relative_url => "#{i*20}/feed"
         })
         redis.zadd(queue.queue_id, Time.now.to_i + i, node.as_json.to_json)
       end

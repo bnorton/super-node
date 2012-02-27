@@ -6,8 +6,7 @@ describe SuperNode::Worker do
   describe "#initialize" do
     describe "manually" do
       before do
-        # invocation.stub(:queue_id).and_return("10")
-        invocation.stub(:as_json).and_return('{"hi": "in there"}')
+        invocation.stub(:as_json).and_return({'hi' => "in there"})
       end
 
       it "should push the invocation to Sidekiq" do
@@ -21,9 +20,9 @@ describe SuperNode::Worker do
   describe "#perform" do
     let(:invocation) do
       SuperNode::Invocation.new({
-        'class' => 'SuperNode::Nom',
-        'method' => 'perform',
-        'queue_id' => '10'
+        :class => 'SuperNode::Nom',
+        :method => 'perform',
+        :queue_id => '10'
       })
     end
 

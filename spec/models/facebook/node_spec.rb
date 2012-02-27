@@ -3,9 +3,9 @@ require 'spec_helper'
 describe SuperNode::Facebook::Node do
   def defaults
     {
-      "access_token" => "AABBaskdfl",
-      "relative_url" => "me/feed",
-      "method" => 'GET'
+      :access_token => "AABBaskdfl",
+      :relative_url => "me/feed",
+      :method => 'GET'
     }
   end
 
@@ -156,17 +156,17 @@ describe SuperNode::Facebook::Node do
     it "should leave off the access token" do
       node.access_token = nil
       node.to_node.should == {
-        "relative_url" => "me/feed",
-        "method" => "GET"
+        'relative_url' => 'me/feed',
+        'method' => 'GET'
       }
     end
 
     it "should include the access token" do
       node.relative_url.should_not be_blank
       node.to_node.should == {
-        "relative_url" => "me/feed",
-        "method" => "GET",
-        "access_token" => "AABBaskdfl"
+        'relative_url' => 'me/feed',
+        'method' => 'GET',
+        'access_token' => 'AABBaskdfl'
       }
     end
 
@@ -174,10 +174,10 @@ describe SuperNode::Facebook::Node do
       node.body = 'hey'
 
       node.to_node.should == {
-        "relative_url" => "me/feed",
-        "method" => "GET",
+        'relative_url' => 'me/feed',
+        'method' => 'GET',
         'body' => 'hey',
-        "access_token" => "AABBaskdfl",
+        'access_token' => 'AABBaskdfl',
       }
     end
   end
