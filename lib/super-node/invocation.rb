@@ -1,7 +1,7 @@
 module SuperNode
   class Invocation
 
-    attr_accessor :klass, :method, :args, :queue_id, :metadata
+    attr_accessor :klass, :method, :args, :callback, :queue_id, :metadata
 
     def initialize(options = {})
       options = JSON.parse(options) if options.kind_of?(String)
@@ -10,7 +10,7 @@ module SuperNode
       @klass = options['class']
       options['method'] = options['method'].try(:to_sym) || :perform
 
-      options.slice(*%w(method args queue_id metadata)).each do |type, val|
+      options.slice(*%w(method args callback queue_id metadata)).each do |type, val|
         send(:"#{type}=", val)
       end
       verify!
