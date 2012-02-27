@@ -8,12 +8,13 @@ module SuperNode
 
       if invocation.present?
         @invocation = invocation
+
+        # Push to the default queue
         Sidekiq::Client.push(nil, 'class' => 'SuperNode::Worker', 'args' => [@invocation.as_json]) rescue nil
       end
     end
 
-    # The Sidekiq client operates on SuperNode::Workers. This perform method
-    #   then performs the supplied invocation.
+    # The Sidekiq client operates on SuperNode::Workers. This method performs the invocation
     def perform(invocation, options = {})
       invocation = SuperNode::Invocation.new(invocation)
 
