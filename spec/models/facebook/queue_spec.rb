@@ -18,20 +18,20 @@ describe SuperNode::Facebook::Queue do
   describe "#initialize" do
     it "should be valid" do
       expect {
-        queue.save
+        SuperNode::Facebook::Queue.new(defaults)
       }.not_to raise_error
     end
 
     it "should require a Facebook access_token" do
-      queue.access_token = nil
+      args = defaults.slice(:queue_id)
       expect {
-        queue.save
+        SuperNode::Facebook::Queue.new(args)
       }.to raise_error(ArgumentError)
     end
   end
 
   describe "#fetch" do
-    def defaults
+    def json
       {
         :class => "SuperNode::Facebook::Queue",
         :method => "fetch",
@@ -41,7 +41,7 @@ describe SuperNode::Facebook::Queue do
     end
 
     before do
-      invocation.stub(:as_json).and_return(defaults)
+      invocation.stub(:as_json).and_return(json)
     end
 
     it "should batchify and save each invocation" do
@@ -55,7 +55,7 @@ describe SuperNode::Facebook::Queue do
     it "should push invocations to sidekiq" do
       Sidekiq::Client.should_receive(:push).with(nil, {
         'class' => 'SuperNode::Worker',
-        'args' => [defaults]},
+        'args' => [json]},
       )
 
       SuperNode::Worker.new(invocation)
@@ -103,7 +103,6 @@ describe SuperNode::Facebook::Queue do
 
   describe "#queue_id" do
     it "should have a default" do
-      queue.save
       queue.queue_id = nil
       queue.queue_id.should =~ /_default/
     end

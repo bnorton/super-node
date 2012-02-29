@@ -18,18 +18,16 @@ module SuperNode
         options.slice(*%w(queue_id access_token metadata)).each do |type, val|
           send(:"#{type}=", val)
         end
+
+        verify!
       end
 
       # facebook - a serialized SuperNode::Facebook::Queue
       def fetch(facebook)
-
-        File.open(File.join(Rails.root, 'tmp', "Fb.fetch.log"), 'a+') {|f| f.write("> #{Time.now.to_f} <") }
-
-        setup facebook
+        setup facebook if facebook.present?
 
         # Make an Invocation per batch and enqueue each in Sidekiq.
-        bat = batchify
-        bat.each do |batch|
+        batchify.each do |batch|
           batch.to_invocation.save
         end
       end
@@ -54,15 +52,15 @@ module SuperNode
 
       def as_json(*)
         {
-          "queue_id" => queue_id,
-          "access_token" => access_token,
-          "metadata" => metadata,
+          'queue_id' => queue_id,
+          'access_token' => access_token,
+          'metadata' => metadata,
         }
       end
 
       def to_invocation(*)
         SuperNode::Invocation.new({
-          :class => "SuperNode::Facebook::Queue",
+          :class => self.class.name,
           :method => "fetch",
           :queue_id => queue_id,
           :args => [as_json]
@@ -85,8 +83,8 @@ module SuperNode
         50
       end
 
-      def save
-        raise ArgumentError, "A Facebook Access Token is required" unless access_token.present?
+      def verify!
+        raise ArgumentError, 'A Facebook Access Token is required' unless access_token.present?
       end
     end
   end

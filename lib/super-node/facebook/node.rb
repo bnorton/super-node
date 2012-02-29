@@ -54,11 +54,11 @@ module SuperNode
       end
 
       def next_page
-        @next_page ||= SuperNode::Facebook::Node.new(pagination['next_page'])
+        @next_page ||= SuperNode::Facebook::Node.new(@pagination['next_page'])
       end
 
       def previous_page
-        @previous_page ||= SuperNode::Facebook::Node.new(pagination['previous_page'])
+        @previous_page ||= SuperNode::Facebook::Node.new(@pagination['previous_page'])
       end
 
       def as_json(*)
