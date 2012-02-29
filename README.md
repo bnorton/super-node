@@ -1,10 +1,14 @@
 #Super Node is for fetching content.
 
 ####Objectives and Goals:
-The goal of the internal queueing structure is to:
+The goal of the Super Node project is to provide a decoupled architecture for performing
+and parsing asynchronous HTTP requests.
 
-1. Maximize the amount of and timeliness of data.
-2. Decouple HTTP requests from any storage/business logic. 
+####Technical details:
+The internal queueing structure accomplishes two goals:
+
+1. Maximizes the amount of and timeliness of data.
+2. Decouples HTTP requests from any storage/business logic.
 
 Has multiple levels of priority queues that can maintain a strict SLA of content delivery.
 
@@ -17,18 +21,19 @@ Has multiple levels of priority queues that can maintain a strict SLA of content
 
 ###Examples
 ====
-- A SuperNode::Queue is initialized with any number of :invocation and :interval pairs. Each invocaiton will be invoked on a processing thread at the specified interval.
+- A SuperNode::Queue is initialized with any number of :invocation and :interval pairs.
+- Each invocaiton will be invoked on a distinct processing thread at the specified interval.
 
 #####Posted Content needs to send data frequently; ie. every 5 seconds, and fetched content should happen no less frequent than every minute.
 
 ```ruby
-SuperNode::Queue.new({
-  :interval => 5,
-  :invocation => SuperNode::Invocation.new({
-    :class => 'SuperNode::Facebook::Batch',
-    :method => 'save_delete',
-    :args => [
-      {
+SuperNode::Queue.new(
+  {
+    :interval => 5,
+    :invocation => SuperNode::Invocation.new({
+      :class => 'SuperNode::Facebook::Batch',
+      :method => 'save_delete',
+      :args => [{
         :access_token => 'AEFARf33fas..',
         :queue_id => 'content:save_delete:all'
       }]
@@ -37,7 +42,6 @@ SuperNode::Queue.new({
   { 
     :interval => 60,
     :invocation => ...,
-    :callback => SuperNode::Invocation({ ... })
   }
 )
 ```
@@ -46,7 +50,7 @@ SuperNode::Queue.new({
 This is the hook back into your application's storage and processing logic.
 
 It is highly recommended that the parsing and processing of content _not_ happen in the same invocation that fetches content. (Time based prioritzation of HTTP requests may become inaccurate).
-The best way to decouple maintain a decoupled content fetch model is a _shared_ processing queue. Have your `fetch` and `save` invocaitons place the returned data into Redis on an agreed-upon location (such as `queue_id + ':parse'` OR an argument to the invocation). Then when invoked, the callbak invocation already knows where to process from. 
+The best way to decouple maintain a decoupled content fetch model is a _shared_ processing queue. Have your `fetch` and `save` invocaitons place the returned data into Redis on an agreed-upon location (such as `queue_id + ':parse'` OR an argument to the invocation)
 
 ####`include SuperNode::Queuable` (TODO) since most of the able is alread implemented.
 
