@@ -41,7 +41,7 @@ module SuperNode
 
     def to_invocation(*)
       SuperNode::Invocation.new({
-        :class => 'SuperNode::Queue',
+        :class => self.class.name,
         :method => 'perform',
         :args => [as_json],
       })

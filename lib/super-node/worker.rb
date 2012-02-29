@@ -17,7 +17,6 @@ module SuperNode
     # The Sidekiq client operates on SuperNode::Workers. This method performs the invocation
     def perform(invocation, options = {})
       invocation = SuperNode::Invocation.new(invocation)
-
       invocation.klass.new.send(invocation.method.to_sym, *invocation.args)
     end
   end

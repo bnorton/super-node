@@ -6,11 +6,11 @@ describe SuperNode::Worker do
   describe "#initialize" do
     describe "manually" do
       before do
-        invocation.stub(:as_json).and_return({'hi' => "in there"})
+        invocation.stub(:as_json).and_return({'hi' => 'in there'})
       end
 
       it "should push the invocation to Sidekiq" do
-        Sidekiq::Client.should_receive(:push).with(nil, hash_including('args' => ['{"hi": "in there"}']))
+        Sidekiq::Client.should_receive(:push).with(nil, hash_including('args' => [{'hi' => 'in there'}]))
 
         SuperNode::Worker.new(invocation)
       end
@@ -18,10 +18,11 @@ describe SuperNode::Worker do
   end
 
   describe "#perform" do
-    let(:invocation) do
+    let!(:nom) { mock("SuperNode::Nom") }
+    let!(:invocation) do
       SuperNode::Invocation.new({
         :class => 'SuperNode::Nom',
-        :method => 'perform',
+        :method => 'locations',
         :queue_id => '10'
       })
     end
@@ -31,10 +32,10 @@ describe SuperNode::Worker do
     end
 
     it "should be called with a valid invocation object" do
-      invocation_json = invocation.as_json.to_json
+      invocation_json = JSON.parse(invocation.as_json.to_json)
 
       expect {
-        SuperNode::Invocation.new(JSON.parse(invocation_json))
+        SuperNode::Invocation.new(invocation_json)
       }.not_to raise_error
     end
 
@@ -43,8 +44,15 @@ describe SuperNode::Worker do
       worker.invocation.should == invocation
     end
 
-    it "should make the callback after an invocation" do
+    it "should make the invocation" do
+      SuperNode::Nom.should_receive(:new).twice.and_return(nom)
+      nom.should_receive(:locations)
 
+      stub_request(:get, "https://justnom.it/locations/here.json?lat=37.7969398498535&lng=-122.399559020996").
+          with(:headers => {'Accept'=>'*/*', 'User-Agent'=>'Ruby'}).
+          to_return(:status => 200, :body => "", :headers => {})
+
+      SuperNode::Worker.new.perform(invocation.as_json)
     end
   end
 
