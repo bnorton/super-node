@@ -1,1 +1,1 @@
-rvm use ruby-1.9.3-p0@super-node --install --create --with-gcc=clang
+rvm use ruby-1.9.3-p125@super-node --create
