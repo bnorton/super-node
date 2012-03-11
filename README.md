@@ -179,7 +179,3 @@ A valid request to the batch API has a top-level "access_token" and a top-level 
 A valid response from Facebook has three components
 - The body of the response is a JSON encoded array of the batched requests (in order).
 - Each of the array items takes the form of what a 'normal' request would give you as far as information goes. Top-level keys are `code`, `headers`, `body`
-- The body is the SAME as any other request to the graph, one more level of JSON encoded
-
-JSON.parse(response.body).map{ |u| u['body'] } # is the array of graph API responses.
-
